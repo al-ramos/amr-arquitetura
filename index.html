@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Referência executiva de arquitetura corporativa: 17 categorias de sistema descritas por propósito, capacidades, módulos, automação, integrações e valor de negócio.">
+<meta name="color-scheme" content="light dark">
+<title>Anatomia da Stack Corporativa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --paper:      #EDF0F3;
+    --surface:    #FCFDFE;
+    --surface-2:  #E3E8ED;
+    --ink:        #12181F;
+    --ink-soft:   #47576A;
+    --ink-faint:  #74879B;
+    --rule:       #CBD4DD;
+    --rule-soft:  #DCE3E9;
+    --accent:     #0E5C70;
+    --oxide:      #A9491B;
+
+    --c-fab:  #A9491B;
+    --c-corp: #3B577C;
+    --c-sup:  #2C6B54;
+    --c-fin:  #8A3A50;
+    --c-ti:   #235F7D;
+
+    --ok:     #2C6B54;
+    --partial:#A9491B;
+
+    --shadow: 0 1px 2px rgba(18,24,31,.05), 0 8px 24px -16px rgba(18,24,31,.28);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #0E1319;
+      --surface:   #151C24;
+      --surface-2: #1D2731;
+      --ink:       #E6ECF2;
+      --ink-soft:  #A6B6C6;
+      --ink-faint: #7A8DA0;
+      --rule:      #2A3742;
+      --rule-soft: #202B35;
+      --accent:    #5FBBD1;
+      --oxide:     #E08B5C;
+
+      --c-fab:  #E08B5C;
+      --c-corp: #8FB0DA;
+      --c-sup:  #6FC2A0;
+      --c-fin:  #DE8AA0;
+      --c-ti:   #74BCDE;
+
+      --ok:     #6FC2A0;
+      --partial:#E08B5C;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #0E1319;
+    --surface:   #151C24;
+    --surface-2: #1D2731;
+    --ink:       #E6ECF2;
+    --ink-soft:  #A6B6C6;
+    --ink-faint: #7A8DA0;
+    --rule:      #2A3742;
+    --rule-soft: #202B35;
+    --accent:    #5FBBD1;
+    --oxide:     #E08B5C;
+
+    --c-fab:  #E08B5C;
+    --c-corp: #8FB0DA;
+    --c-sup:  #6FC2A0;
+    --c-fin:  #DE8AA0;
+    --c-ti:   #74BCDE;
+
+    --ok:     #6FC2A0;
+    --partial:#E08B5C;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+  }
+
+  * { box-sizing: border-box; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  h1, h2, h3, h4, .ui {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    text-wrap: balance;
+  }
+
+  a { color: inherit; }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+  }
+  .masthead-inner {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 44px 28px 34px;
+    display: grid;
+    gap: 22px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(30px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -.025em;
+    line-height: 1.05;
+  }
+  h1 span { color: var(--accent); }
+  .standfirst {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 18px;
+    color: var(--ink-soft);
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 18px;
+  }
+  .fact {
+    padding-right: 30px;
+    margin-right: 30px;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .fact:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+  .fact-n {
+    font-family: Archivo, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .fact-l {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- shell ---------- */
+  .shell {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 28px 90px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 44px;
+    align-items: start;
+  }
+  @media (min-width: 1040px) {
+    .shell { grid-template-columns: 232px 1fr; gap: 56px; padding-top: 8px; }
+    .rail { position: sticky; top: 24px; }
+  }
+
+  /* ---------- rail ---------- */
+  .rail {
+    padding-top: 40px;
+    font-family: Archivo, sans-serif;
+    font-size: 13.5px;
+  }
+  .rail-title {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 14px;
+  }
+  .rail-group { margin-bottom: 18px; }
+  .rail-group > a {
+    display: block;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .rail ul { list-style: none; margin: 0; padding: 0 0 0 11px; border-left: 2px solid var(--rule-soft); }
+  .rail li a {
+    display: block;
+    padding: 3px 0 3px 9px;
+    margin-left: -11px;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+    color: var(--ink-soft);
+    line-height: 1.35;
+  }
+  .rail li a:hover { color: var(--ink); }
+  .rail li a.on { color: var(--ink); font-weight: 600; border-left-color: currentColor; }
+  .rail a:focus-visible, .card-head a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  /* ---------- main ---------- */
+  main { min-width: 0; padding-top: 40px; display: grid; gap: 56px; }
+
+  .lede h2 {
+    margin: 0 0 12px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .lede p { margin: 0 0 14px; max-width: 68ch; color: var(--ink-soft); }
+  .lede p strong { color: var(--ink); font-weight: 600; }
+
+  figure { margin: 0; }
+  .figwrap {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 22px 20px 14px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .figwrap svg { display: block; min-width: 720px; width: 100%; height: auto; color: var(--ink); }
+  figcaption {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--ink-faint);
+    max-width: 72ch;
+  }
+
+  /* ---------- sections ---------- */
+  section.domain { scroll-margin-top: 20px; display: grid; gap: 26px; }
+  .domain-head {
+    display: grid;
+    gap: 8px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--dom);
+  }
+  .domain-head .eyebrow { color: var(--dom); }
+  .domain-head h2 {
+    margin: 0;
+    font-size: clamp(24px, 3.4vw, 32px);
+    font-weight: 800;
+    letter-spacing: -.022em;
+  }
+  .domain-head p { margin: 4px 0 0; color: var(--ink-soft); max-width: 68ch; }
+
+  /* ---------- card ---------- */
+  article.sys {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--dom);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    scroll-margin-top: 20px;
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 20px 24px 18px;
+    border-bottom: 1px solid var(--rule-soft);
+    display: grid;
+    gap: 7px;
+  }
+  .sigla {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--dom);
+  }
+  .card-head h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -.015em;
+    line-height: 1.2;
+  }
+  .platform {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+  .platform b { color: var(--ink-soft); font-weight: 500; }
+
+  dl.facets { margin: 0; }
+  .facet {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .facet:last-of-type { border-bottom: 0; }
+  @media (min-width: 700px) {
+    .facet { grid-template-columns: 152px 1fr; gap: 22px; align-items: start; }
+  }
+  dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-top: 4px;
+  }
+  dd { margin: 0; color: var(--ink-soft); }
+  dd strong { color: var(--ink); font-weight: 600; }
+  dd ul { margin: 0; padding-left: 18px; }
+  dd li { margin-bottom: 3px; }
+  dd li::marker { color: var(--ink-faint); }
+
+
+  /* ---------- closing ---------- */
+  .closing {
+    border-top: 2px solid var(--rule);
+    padding-top: 28px;
+    display: grid;
+    gap: 16px;
+  }
+  .closing h2 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+  .closing p { margin: 0; max-width: 70ch; color: var(--ink-soft); }
+  .closing p strong { color: var(--ink); font-weight: 600; }
+  .note {
+    font-size: 13.5px;
+    color: var(--ink-faint);
+    border-left: 2px solid var(--rule);
+    padding-left: 14px;
+    max-width: 72ch;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="eyebrow">Referência de arquitetura corporativa &middot; Setembro 2026</div>
+    <h1>O que a nossa tecnologia<br><span>de fato faz</span> pelo negócio</h1>
+    <p class="standfirst">Dezessete categorias de sistema, das máquinas do chão de fábrica ao razão contábil, descritas por aquilo que produzem — não pelas siglas que carregam. Cada ficha responde a seis perguntas: por que o sistema existe, o que as pessoas fazem nele, do que ele é feito, o que roda sozinho, com quem ele conversa e o que sobra de valor no fim.</p>
+    <div class="facts">
+      <div class="fact"><div class="fact-n">17</div><div class="fact-l">Sistemas</div></div>
+      <div class="fact"><div class="fact-n">5</div><div class="fact-l">Domínios</div></div>
+      <div class="fact"><div class="fact-n">6</div><div class="fact-l">Dimensões por ficha</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="rail" aria-label="Índice dos sistemas">
+    <div class="rail-title">Índice</div>
+
+    <div class="rail-group">
+      <a href="#manufatura">Manufatura</a>
+      <ul>
+        <li><a href="#mes">MES — Opcenter Execution</a></li>
+      </ul>
+    </div>
+
+    <div class="rail-group">
+      <a href="#corporativa">Gestão corporativa</a>
+      <ul>
+        <li><a href="#erp">ERP — S/4HANA · Protheus</a></li>
+        <li><a href="#crm">CRM — Sales Cloud</a></li>
+        <li><a href="#hcm">HCM — Workday · SuccessFactors</a></li>
+        <li><a href="#mdm">MDM — Informatica</a></li>
+      </ul>
+    </div>
+
+    <div class="rail-group">
+      <a href="#suprimentos">Cadeia de suprimentos</a>
+      <ul>
+        <li><a href="#scm">SCM — Kinaxis · Blue Yonder</a></li>
+        <li><a href="#wms">WMS — Manhattan Active</a></li>
+        <li><a href="#oms">OMS — Manhattan Active OM</a></li>
+        <li><a href="#p2p">P2P — Ariba · Coupa</a></li>
+        <li><a href="#pim">PIM — Akeneo · Salsify</a></li>
+      </ul>
+    </div>
+
+    <div class="rail-group">
+      <a href="#financeiro">Financeiro e fiscal</a>
+      <ul>
+        <li><a href="#apar">AP/AR — SAP FI · NetSuite</a></li>
+        <li><a href="#fiscal">Fiscal BR — TOTVS · Sovos</a></li>
+      </ul>
+    </div>
+
+    <div class="rail-group">
+      <a href="#dados">Dados e TI</a>
+      <ul>
+        <li><a href="#bi">BI — Power BI · Tableau</a></li>
+        <li><a href="#etl">ETL — Fivetran · dbt</a></li>
+        <li><a href="#ipaas">iPaaS — MuleSoft · Boomi</a></li>
+        <li><a href="#bpm">BPM — Camunda · Pega</a></li>
+        <li><a href="#iam">IAM — Okta · Entra ID</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <div class="lede">
+      <h2>Como ler este documento</h2>
+      <p>Nenhum destes sistemas existe isolado. O que dá valor à arquitetura não são as caixas, e sim <strong>o caminho que um pedido percorre entre elas</strong> — do momento em que um vendedor marca a oportunidade como ganha até a nota fiscal autorizada pela SEFAZ. O diagrama abaixo desenha esse caminho; as fichas que vêm depois detalham cada parada.</p>
+
+      <figure>
+        <div class="figwrap">
+          <svg viewBox="0 0 1000 512" role="img" aria-label="Diagrama do caminho de um pedido pela arquitetura: o cadastro mestre alimenta a cadeia CRM, OMS, SCM, MES, WMS, contas a receber e fiscal; o ERP sustenta a cadeia por baixo; a camada de integração transporta todo o tráfego; o BI apenas lê.">
+            <defs>
+              <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- MDM band -->
+            <rect x="20" y="16" width="960" height="42" rx="2" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="5 4" opacity=".55"/>
+            <text x="36" y="42" font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor" opacity=".85">MDM — cadastro mestre de produto, cliente e fornecedor</text>
+            <text x="964" y="42" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".5">uma verdade só, para todos</text>
+
+            <!-- dashed feeds down -->
+            <g stroke="currentColor" opacity=".35" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#ar)">
+              <line x1="90"  y1="58" x2="90"  y2="126"/>
+              <line x1="360" y1="58" x2="360" y2="126"/>
+              <line x1="640" y1="58" x2="640" y2="126"/>
+              <line x1="910" y1="58" x2="910" y2="126"/>
+            </g>
+
+            <!-- main lane boxes: 7 boxes, w=120, gap=20, start x=20 -->
+            <g font-family="Archivo, sans-serif">
+              <g fill="none" stroke="currentColor" stroke-width="1.4">
+                <rect x="20"  y="130" width="120" height="58" rx="2"/>
+                <rect x="160" y="130" width="120" height="58" rx="2"/>
+                <rect x="300" y="130" width="120" height="58" rx="2"/>
+                <rect x="440" y="130" width="120" height="58" rx="2"/>
+                <rect x="580" y="130" width="120" height="58" rx="2"/>
+                <rect x="720" y="130" width="120" height="58" rx="2"/>
+                <rect x="860" y="130" width="120" height="58" rx="2"/>
+              </g>
+              <g font-size="14" font-weight="700" text-anchor="middle" fill="currentColor">
+                <text x="80"  y="155">CRM</text>
+                <text x="220" y="155">OMS</text>
+                <text x="360" y="155">SCM</text>
+                <text x="500" y="155">MES</text>
+                <text x="640" y="155">WMS</text>
+                <text x="780" y="155">AP / AR</text>
+                <text x="920" y="155">Fiscal</text>
+              </g>
+              <g font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".62" font-family="IBM Plex Mono, monospace">
+                <text x="80"  y="174">oportunidade</text>
+                <text x="220" y="174">pedido</text>
+                <text x="360" y="174">plano</text>
+                <text x="500" y="174">produção</text>
+                <text x="640" y="174">expedição</text>
+                <text x="780" y="174">recebível</text>
+                <text x="920" y="174">NF-e</text>
+              </g>
+            </g>
+
+            <!-- lane arrows -->
+            <g stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)">
+              <line x1="140" y1="159" x2="158" y2="159"/>
+              <line x1="280" y1="159" x2="298" y2="159"/>
+              <line x1="420" y1="159" x2="438" y2="159"/>
+              <line x1="560" y1="159" x2="578" y2="159"/>
+              <line x1="700" y1="159" x2="718" y2="159"/>
+              <line x1="840" y1="159" x2="858" y2="159"/>
+            </g>
+            <g font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle" fill="currentColor" opacity=".75">
+              <text x="149" y="120">ganho</text>
+              <text x="289" y="120">promessa</text>
+              <text x="429" y="120">ordem</text>
+              <text x="499" y="207">separar</text>
+              <text x="709" y="120">embarcado</text>
+              <text x="849" y="120">faturar</text>
+            </g>
+            <path d="M 500 188 L 500 200 L 640 200 L 640 190" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#ar)"/>
+
+            <!-- ERP band -->
+            <rect x="20" y="238" width="960" height="52" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="36" y="262" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="currentColor">ERP</text>
+            <text x="36" y="279" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".62">razão contábil · estoque · compras · custo — o sistema de registro por baixo de tudo</text>
+            <g stroke="currentColor" stroke-width="1.2" opacity=".6" marker-end="url(#ar)">
+              <line x1="360" y1="238" x2="360" y2="192"/>
+              <line x1="500" y1="238" x2="500" y2="212"/>
+              <line x1="780" y1="238" x2="780" y2="192"/>
+            </g>
+            <text x="964" y="262" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".5">P2P · PIM · HCM alimentam este bloco</text>
+
+            <!-- integration band -->
+            <rect x="20" y="330" width="960" height="52" rx="2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="7 4"/>
+            <text x="36" y="354" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="currentColor">Integração &amp; processo</text>
+            <text x="36" y="371" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".62">iPaaS · ETL · BPM · IAM — toda seta deste diagrama trafega por aqui, autenticada e auditada</text>
+
+            <!-- BI band -->
+            <rect x="20" y="422" width="960" height="52" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="36" y="446" font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="currentColor">BI</text>
+            <text x="36" y="463" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".62">lê tudo, não escreve nada — a camada de leitura da operação</text>
+            <g stroke="currentColor" stroke-width="1.2" opacity=".45" stroke-dasharray="3 4" marker-end="url(#ar)">
+              <line x1="200" y1="422" x2="200" y2="390"/>
+              <line x1="500" y1="422" x2="500" y2="390"/>
+              <line x1="800" y1="422" x2="800" y2="390"/>
+            </g>
+            <text x="964" y="446" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".5">leitura</text>
+          </svg>
+        </div>
+        <figcaption>O trajeto de um pedido, da oportunidade comercial à nota autorizada. As três faixas horizontais não são etapas: o ERP registra o que a cadeia faz, a camada de integração transporta cada seta, e o BI apenas observa. Onde uma dessas faixas falta, as caixas da cadeia passam a conversar por planilha.</figcaption>
+      </figure>
+    </div>
+
+    <!-- ============ MANUFATURA ============ -->
+    <section class="domain" id="manufatura" style="--dom: var(--c-fab)">
+      <div class="domain-head">
+        <div class="eyebrow">Domínio 01</div>
+        <h2>Manufatura</h2>
+        <p>Onde o plano vira produto físico. É a única camada da arquitetura em que o erro não é reversível por estorno — o material já foi consumido.</p>
+      </div>
+
+      <article class="sys" id="mes">
+        <div class="card-head">
+          <div class="sigla">MES / MOM · Manufacturing Execution System</div>
+          <h3>Execução de manufatura</h3>
+          <div class="platform"><b>Opcenter Execution</b> — Siemens</div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Fechar a lacuna entre o que o ERP planeja e o que a fábrica de fato produziu. Sem MES, o sistema corporativo sabe o que entrou e o que saiu, mas o que aconteceu entre as duas pontas vive em papel, planilha e memória de operador.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Liberar e sequenciar ordens de produção no posto de trabalho</li>
+            <li>Apontar produção, refugo e retrabalho por operador, turno e equipamento</li>
+            <li>Rastrear lote e número de série do insumo até o produto acabado</li>
+            <li>Impor receitas e parâmetros de processo por tipo de operação</li>
+            <li>Registrar paradas com motivo, alimentando a análise de perdas</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Gestão de ordens · genealogia e rastreabilidade · qualidade em processo · gestão de recursos (máquina, ferramenta, pessoa) · coleta de dados de chão, manual e via CLP · desempenho e OEE.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Recebe a ordem do ERP e a sequencia sozinho; lê contadores direto do CLP, dispensando apontamento manual; <strong>bloqueia a operação quando um parâmetro sai da faixa</strong> — o poka-yoke digital; calcula OEE em tempo real e abre alerta de parada sem que ninguém precise consultar um relatório.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP (ordem, confirmação, consumo de material) · APS (sequenciamento fino) · SCADA e CLP (dados de máquina) · WMS (consumo e entrega de material) · QMS e LIMS (resultado de ensaio) · Historian (série temporal de processo).</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Rastreabilidade auditável — um recall se resolve em horas, não em semanas. OEE medido em vez de estimado. Refugo cai porque a causa fica visível no turno em que ocorreu, e o estoque em processo deixa de ser um número de fé.</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <!-- ============ CORPORATIVA ============ -->
+    <section class="domain" id="corporativa" style="--dom: var(--c-corp)">
+      <div class="domain-head">
+        <div class="eyebrow">Domínio 02</div>
+        <h2>Gestão corporativa</h2>
+        <p>Os sistemas de registro. Guardam a versão oficial dos fatos — o que a empresa possui, deve, vende e emprega — e é contra eles que todo o resto se concilia.</p>
+      </div>
+
+      <article class="sys" id="erp">
+        <div class="card-head">
+          <div class="sigla">ERP · Enterprise Resource Planning</div>
+          <h3>Planejamento de recursos empresariais</h3>
+          <div class="platform"><b>SAP S/4HANA</b> · <b>TOTVS Protheus</b> (Brasil)</div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Manter uma única contabilidade da empresa. Todo evento operacional — uma compra, uma produção, uma venda — precisa virar lançamento em algum lugar, e o ERP é esse lugar. Ele existe para que a operação e o balanço não contem histórias diferentes.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Cadastro e movimentação de estoque com custo por item</li>
+            <li>Compras, do requisitório ao recebimento fiscal</li>
+            <li>Vendas e faturamento, com apuração de margem</li>
+            <li>Contabilidade, custos e fechamento de período</li>
+            <li>MRP — explosão de necessidades de material a partir da demanda</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Financeiro (FI) · Controladoria e custos (CO) · Materiais e compras (MM) · Vendas e distribuição (SD) · Planejamento de produção (PP) · Manutenção de ativos (PM).</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>MRP roda em lote e gera requisições de compra e ordens planejadas sem intervenção; <strong>a conferência a três vias</strong> — pedido, recebimento e nota — libera o pagamento sozinha quando os três batem; rateio de custo indireto e depreciação são calculados no fechamento por regra parametrizada.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>É o hub: recebe do MES (produção), WMS (movimento de estoque), CRM (pedido), P2P (compra) e HCM (folha); entrega ao BI, ao fiscal e ao consolidador contábil. O MDM define a chave que todos usam para se falar.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Fechamento contábil em dias em vez de semanas, margem calculada por produto em vez de estimada no agregado, e uma base de auditoria que sustenta operação regulada, financiamento e due diligence.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="crm">
+        <div class="card-head">
+          <div class="sigla">CRM · Customer Relationship Management</div>
+          <h3>Gestão do relacionamento com o cliente</h3>
+          <div class="platform"><b>Sales Cloud</b> — Salesforce</div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Transformar relacionamento comercial em ativo da empresa, e não do vendedor. Sem CRM, a carteira mora no celular de quem vende — e vai embora junto com ele.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Registrar contas, contatos, leads e prospects com histórico completo</li>
+            <li>Conduzir oportunidades por um funil de estágios definidos</li>
+            <li>Prever receita por probabilidade e data de fechamento</li>
+            <li>Registrar cada interação — visita, ligação, proposta, objeção</li>
+            <li>Medir desempenho por vendedor, território e produto</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Contas e contatos · leads e qualificação · oportunidades e funil · atividades e agenda · previsão de vendas · relatórios e painéis · gestão de território e metas.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Distribui e pontua leads por regra (lead scoring), avança estágios conforme critério objetivo, dispara sequências de contato e lembretes de follow-up, e <strong>alerta sobre oportunidade parada</strong> antes que ela esfrie — o gerente descobre pelo sistema, não pela ausência de notícia.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP e OMS (oportunidade ganha vira pedido), CPQ (proposta e preço), automação de marketing (lead qualificado), financeiro (situação de crédito e inadimplência do cliente), MDM (identidade única do cliente).</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Previsibilidade de receita — o funil dá números antes do fato. Ciclo de venda mais curto por remoção de esquecimento operacional, e continuidade do atendimento independente de troca de vendedor.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="hcm">
+        <div class="card-head">
+          <div class="sigla">HCM / HRIS · Human Capital Management</div>
+          <h3>Gestão de pessoas</h3>
+          <div class="platform"><b>Workday HCM</b> · <b>SAP SuccessFactors</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Tratar quadro de pessoal como estrutura gerenciável, não como lista de pagamento. Responde quem trabalha aqui, sob qual estrutura, com qual custo e com qual capacidade — perguntas que a folha isolada não responde.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Cadastro funcional, organograma e posições</li>
+            <li>Admissão, movimentação e desligamento com trilha de aprovação</li>
+            <li>Ponto, escala e banco de horas</li>
+            <li>Avaliação de desempenho, metas e plano de desenvolvimento</li>
+            <li>Remuneração, benefícios e ciclos de mérito</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Core HR · folha e benefícios · ponto e jornada · recrutamento e seleção · desempenho e metas · treinamento · sucessão e carreira · analytics de pessoas.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Fluxos de aprovação por hierarquia, provisionamento e revogação de acesso automáticos na admissão e no desligamento (via IAM), cálculo de encargos e provisões, e <strong>alerta de vencimento de treinamento obrigatório ou exame ocupacional</strong> antes que o colaborador fique irregular.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP (custo de pessoal e centro de custo), IAM (ciclo de vida da identidade), MES (quem está habilitado a operar qual equipamento), ponto eletrônico, e-Social e órgãos fiscais.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Custo de pessoal visível por área antes do fechamento, conformidade trabalhista sustentada por trilha e não por memória, e redução do risco de acesso órfão — a conta do colaborador desligado morre no mesmo dia.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="mdm">
+        <div class="card-head">
+          <div class="sigla">MDM · Master Data Management</div>
+          <h3>Gestão de dados mestres</h3>
+          <div class="platform"><b>Informatica MDM</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Garantir que "cliente 4471" signifique a mesma empresa em cinco sistemas diferentes. É a camada que impede a arquitetura de se fragmentar em versões concorrentes da mesma verdade — o problema que só aparece quando dois relatórios corretos discordam.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Definir o registro-ouro de produto, cliente, fornecedor e local</li>
+            <li>Identificar e fundir duplicidades entre sistemas de origem</li>
+            <li>Publicar o cadastro consolidado para todos os consumidores</li>
+            <li>Aplicar regras de qualidade e completude antes da publicação</li>
+            <li>Manter linhagem: de qual sistema veio cada atributo</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Modelo de domínio · motor de correspondência e fusão · qualidade de dados · governança e fluxo de curadoria · hierarquias (grupo econômico, família de produto) · publicação e sincronização.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Casamento probabilístico de registros parecidos sem intervenção; <strong>encaminha para curadoria humana só o que ficou na zona cinzenta</strong>; propaga a correção para todos os sistemas assinantes; padroniza endereço, CNPJ e unidade de medida na entrada.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>Consome de ERP, CRM, PIM e sistemas legados; publica para todos eles e para o data warehouse. Na prática, roda em cima do iPaaS ou do ETL, que fazem o transporte.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Relatórios que fecham entre si. Faturamento sem duplicidade de cadastro, negociação de compra com visão consolidada do fornecedor, e migração de sistema que não exige arqueologia de cadastro.</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <!-- ============ SUPRIMENTOS ============ -->
+    <section class="domain" id="suprimentos" style="--dom: var(--c-sup)">
+      <div class="domain-head">
+        <div class="eyebrow">Domínio 03</div>
+        <h2>Cadeia de suprimentos</h2>
+        <p>A camada que decide o que comprar, quando produzir e como entregar. É onde capital de giro é criado ou destruído, um dia de estoque por vez.</p>
+      </div>
+
+      <article class="sys" id="scm">
+        <div class="card-head">
+          <div class="sigla">SCM · Supply Chain Management</div>
+          <h3>Planejamento da cadeia de suprimentos</h3>
+          <div class="platform"><b>Kinaxis RapidResponse</b> · <b>Blue Yonder Luminate</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Decidir, antes de o problema acontecer, o que produzir e comprar. O ERP calcula necessidade a partir de uma demanda dada; o SCM questiona a demanda, simula cenários e escolhe o plano que equilibra nível de serviço e capital parado.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Previsão de demanda estatística, ajustada por evento comercial</li>
+            <li>Planejamento de estoque e política de ressuprimento por item</li>
+            <li>Plano mestre de produção equilibrado com capacidade</li>
+            <li>Simulação de cenários — e se o fornecedor atrasar quinze dias?</li>
+            <li>S&amp;OP: consenso entre comercial, operações e finanças</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Planejamento de demanda · planejamento de suprimento · estoque multiescalão · plano mestre e capacidade · S&amp;OP e S&amp;OE · torre de controle e gestão de exceções.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Reprojeta a previsão a cada ciclo com modelo estatístico; <strong>replaneja a cadeia inteira em memória quando um dado muda</strong>, em segundos, não em rodada noturna; classifica e prioriza exceções para que o planejador trate as vinte que importam, não as duas mil que o sistema encontrou.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP (estoque, ordens firmes, lead time), CRM (pipeline como sinal de demanda), MES e APS (capacidade real), portal de fornecedor (confirmação de entrega), BI (acurácia da previsão).</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Menos capital em estoque com o mesmo nível de serviço, ruptura antecipada em vez de descoberta, e uma discussão de S&amp;OP baseada em um número só — o que encurta a reunião e a decisão.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="wms">
+        <div class="card-head">
+          <div class="sigla">WMS · Warehouse Management System</div>
+          <h3>Gestão de armazém</h3>
+          <div class="platform"><b>Manhattan Active WM</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Saber não só quanto existe, mas exatamente onde está e quem mexeu. O ERP controla saldo; o WMS controla endereço, e é essa diferença que separa um armazém que atende de um armazém que procura.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Endereçamento e mapeamento físico do armazém</li>
+            <li>Recebimento com conferência cega e endereçamento dirigido</li>
+            <li>Separação por onda, lote ou pedido, com roteiro otimizado</li>
+            <li>Inventário rotativo sem parar a operação</li>
+            <li>Controle de lote, validade e número de série na movimentação</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Recebimento e conferência · armazenagem e endereçamento · separação e conferência de saída · expedição e carregamento · inventário · gestão de mão de obra · pátio e docas.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Sugere o endereço de guarda pelo perfil do item e pela ocupação; <strong>monta o roteiro de separação para minimizar deslocamento</strong>; libera FEFO por validade sem o operador decidir; dispara reposição de picking quando o nível cai; direciona a tarefa ao coletor do operador mais próximo.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP (saldo e documento fiscal), OMS (ordem de separação e promessa de entrega), TMS (roteirização e embarque), MES (entrega de insumo e recolhimento de acabado), automação física — coletores, esteiras, AGVs.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Acuracidade de inventário acima de 99% sem parada para contagem geral, produtividade por separador medida e comparável, e expedição sem erro de item — a reclamação mais cara que um cliente registra.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="oms">
+        <div class="card-head">
+          <div class="sigla">OMS · Order Management System</div>
+          <h3>Gestão de pedidos</h3>
+          <div class="platform"><b>Manhattan Active OM</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Ser o dono do pedido do aceite à entrega, atravessando canais e depósitos. Existe porque a pergunta "cadê meu pedido?" não tem dono natural em nenhum outro sistema.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Captura de pedidos de todos os canais em um único fluxo</li>
+            <li>Estoque disponível para promessa consolidado entre depósitos</li>
+            <li>Decisão de origem — de qual centro atender cada item</li>
+            <li>Gestão de pedido parcial, cancelamento, troca e devolução</li>
+            <li>Rastreamento e comunicação de status ao cliente</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Captura e orquestração · disponibilidade global de estoque (ATP) · motor de sourcing · pagamentos e crédito · logística reversa · portal de acompanhamento.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Escolhe a origem por custo, prazo e saldo sem operador; <strong>fraciona o pedido entre depósitos quando nenhum atende sozinho</strong>; reserva estoque no aceite; libera crédito por regra; reprocessa automaticamente pedidos travados por indisponibilidade quando o item entra.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>CRM e e-commerce (entrada do pedido), WMS (ordem de separação), TMS (embarque), ERP (faturamento e contabilização), gateway de pagamento, SCM (sinal de demanda real).</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Prazo prometido que se cumpre, porque a promessa é calculada e não estimada. Menos venda perdida por estoque invisível em outro depósito e menos atendimento consumido respondendo status.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="p2p">
+        <div class="card-head">
+          <div class="sigla">SRM / P2P · Procure-to-Pay</div>
+          <h3>Compras e relacionamento com fornecedores</h3>
+          <div class="platform"><b>SAP Ariba</b> · <b>Coupa</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Fazer da compra um processo controlado, e não um favor entre áreas. Cobre da necessidade ao pagamento com trilha, para que gasto fora de contrato deixe de ser invisível até a fatura chegar.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Requisição com catálogo e alçada de aprovação</li>
+            <li>Cotação, leilão reverso e negociação estruturada</li>
+            <li>Contratos com preço e vigência aplicados na compra</li>
+            <li>Homologação, qualificação e avaliação de fornecedor</li>
+            <li>Recebimento de fatura e conciliação a três vias</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Sourcing e cotação · catálogo e requisição · contratos · cadastro e risco de fornecedor · faturas e pagamentos · analytics de gasto (spend analysis).</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Roteia aprovação por valor e categoria; <strong>bloqueia compra fora de contrato ou fora do catálogo na origem</strong>, em vez de apontar depois; casa pedido, recebimento e nota e libera pagamento sem toque quando os três batem; monitora certidões e vencimentos do fornecedor.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP (pedido, recebimento, contas a pagar), MDM (cadastro único de fornecedor), rede de fornecedores via EDI, fiscal (validação da nota), BPM (aprovações não padronizadas).</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Economia direta por consolidação de volume e adesão a contrato, ciclo de aprovação medido em horas, e uma base de gasto por categoria que sustenta negociação em vez de achismo.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="pim">
+        <div class="card-head">
+          <div class="sigla">PIM · Product Information Management</div>
+          <h3>Informação de produto</h3>
+          <div class="platform"><b>Akeneo</b> · <b>Salsify</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Separar o produto que se vende do produto que se contabiliza. O ERP guarda código, custo e unidade; o PIM guarda tudo que faz alguém comprar — descrição, atributo técnico, foto, certificação — em cada idioma e cada canal.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Modelar famílias de produto com atributos próprios</li>
+            <li>Enriquecer a ficha em fluxo colaborativo entre áreas</li>
+            <li>Versionar por canal, mercado e idioma</li>
+            <li>Vincular mídia, manual, ficha técnica e certificado</li>
+            <li>Publicar catálogos para e-commerce, marketplace e distribuidor</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Modelo de atributos e famílias · fluxo de enriquecimento · qualidade e completude · tradução e localização · biblioteca de mídia (ou integração com DAM) · conectores de canal.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Calcula um índice de completude e <strong>impede a publicação de ficha incompleta</strong>; distribui tarefa de enriquecimento a quem detém a informação; sincroniza catálogo com canais em lote programado; valida atributo contra o formato exigido por cada marketplace.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP e MDM (identidade e código do produto), DAM (ativos visuais), e-commerce e marketplaces, CRM e CPQ (o que o vendedor mostra), impressão de catálogo.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Lançamento de produto em dias, não semanas. Menos devolução por descrição errada, e presença consistente em todos os canais — o mesmo produto com a mesma cara em toda parte.</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <!-- ============ FINANCEIRO ============ -->
+    <section class="domain" id="financeiro" style="--dom: var(--c-fin)">
+      <div class="domain-head">
+        <div class="eyebrow">Domínio 04</div>
+        <h2>Financeiro e fiscal</h2>
+        <p>Onde a operação vira dinheiro e obrigação. No Brasil, esta camada carrega uma exigência que quase nenhum outro país impõe: o Estado valida a transação em tempo real.</p>
+      </div>
+
+      <article class="sys" id="apar">
+        <div class="card-head">
+          <div class="sigla">AP / AR · Accounts Payable &amp; Receivable</div>
+          <h3>Operações financeiras</h3>
+          <div class="platform"><b>SAP FI</b> · <b>Oracle NetSuite</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Controlar a única coisa que mata empresa lucrativa: o caixa. Registra o que se deve e o que se tem a receber, com data, para que a pergunta "temos dinheiro no dia 20?" tenha resposta antes do dia 20.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Contas a pagar com vencimento, status e fornecedor</li>
+            <li>Contas a receber e controle de liquidação</li>
+            <li>Lançamentos categorizados por centro de custo</li>
+            <li>Conciliação bancária e de cartão</li>
+            <li>Fluxo de caixa projetado e realizado</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Contas a pagar · contas a receber · tesouraria e bancos · conciliação · gestão de crédito e cobrança · razão e centro de custo · painel de indicadores.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Gera o recebível a partir da nota emitida e o pagável a partir do recebimento de compra, sem digitação; <strong>concilia extrato bancário por regra e só apresenta a exceção</strong>; roda régua de cobrança escalonada; remete e retorna arquivos de boleto (CNAB) direto com o banco.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP (razão contábil), P2P (fatura aprovada), OMS e faturamento (recebível), fiscal (nota autorizada), bancos via CNAB e API, tesouraria, BI.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Previsão de caixa confiável — que é o que sustenta decisão de investimento e negociação de crédito. Inadimplência tratada por processo, e não por lembrança, e fechamento sem mutirão de conciliação.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="fiscal">
+        <div class="card-head">
+          <div class="sigla">Fiscal BR · Compliance tributário brasileiro</div>
+          <h3>Emissão e escrituração fiscal</h3>
+          <div class="platform"><b>TOTVS Fiscal</b> · <b>Sovos</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Cumprir a obrigação de documentar cada operação perante o fisco, em tempo real e no formato exato que ele exige. É a única categoria desta lista em que a falha não gera ineficiência — gera multa e caminhão parado na estrada.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Emitir NF-e, NFS-e, NFC-e e CT-e com autorização da SEFAZ</li>
+            <li>Aplicar a regra tributária correta por produto, estado e operação</li>
+            <li>Gerar e transmitir SPED Fiscal, Contribuições e ECD/ECF</li>
+            <li>Receber, validar e manifestar notas de entrada</li>
+            <li>Guardar o XML pelo prazo legal, com consulta auditável</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Motor de cálculo tributário · emissor de documentos eletrônicos · comunicação com SEFAZ · escrituração e SPED · recepção e manifestação de entrada · guarda de XML · apuração de impostos.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Determina CFOP, CST, NCM e alíquota por matriz de regras, sem operador escolher; transmite e trata rejeição com reenvio; <strong>a atualização da legislação chega como conteúdo do fornecedor</strong>, não como projeto interno — o que, no Brasil, é o principal argumento de compra; baixa e concilia notas de entrada direto do portal.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>ERP e faturamento (documento de origem), AP/AR (recebível e crédito), WMS e TMS (o CT-e acompanha a carga), SEFAZ e prefeituras, contabilidade, guarda digital.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Operação que não para por rejeição fiscal, risco de autuação contido, e a carga tributária apurada corretamente — inclusive os créditos que, sem sistema, simplesmente não são aproveitados.</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <!-- ============ DADOS E TI ============ -->
+    <section class="domain" id="dados" style="--dom: var(--c-ti)">
+      <div class="domain-head">
+        <div class="eyebrow">Domínio 05</div>
+        <h2>Dados e TI</h2>
+        <p>A camada que ninguém compra por vontade própria e sem a qual nada acima funciona junto. É o que transforma sistemas isolados em arquitetura.</p>
+      </div>
+
+      <article class="sys" id="bi">
+        <div class="card-head">
+          <div class="sigla">BI · Business Intelligence</div>
+          <h3>Inteligência de negócio</h3>
+          <div class="platform"><b>Power BI</b> — Microsoft · <b>Tableau</b> — Salesforce</div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Dar à gestão uma leitura da operação que não dependa de alguém montar planilha. Os sistemas transacionais respondem "o que aconteceu com este pedido"; o BI responde "o que está acontecendo com o negócio".</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Painéis por área, atualizados sem intervenção</li>
+            <li>Exploração livre pelo próprio usuário, sem pedir relatório à TI</li>
+            <li>Indicadores com meta, tendência e alerta de desvio</li>
+            <li>Detalhamento do agregado até a transação de origem</li>
+            <li>Distribuição programada por e-mail e celular</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Modelagem semântica e métricas · visualização e painéis · publicação e governança de acesso · alertas e assinaturas · consulta em linguagem natural · aplicação móvel.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Atualiza o modelo em janela programada; <strong>dispara alerta quando o indicador cruza o limite</strong>, invertendo a lógica de quem procura o número; destaca anomalia e sugere o fator que mais contribuiu para a variação; entrega o resumo pronto no horário da reunião.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>Lê do data warehouse e diretamente de ERP, CRM, WMS, MES e financeiro; recebe do ETL o dado já tratado; usa o IAM para que cada pessoa veja apenas a sua fatia.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Reunião gerencial que discute decisão em vez de discutir de quem é o número certo. Desvio detectado no dia, não no fechamento, e horas de analista devolvidas à análise.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="etl">
+        <div class="card-head">
+          <div class="sigla">ETL / ELT · Data Integration</div>
+          <h3>Movimentação e preparo de dados</h3>
+          <div class="platform"><b>Fivetran</b> · <b>dbt</b> · <b>Informatica</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Levar o dado de onde ele nasce para onde ele é analisado, tratado e comparável. É o encanamento entre os sistemas de operação e a camada analítica — invisível quando funciona, e a explicação de todo relatório errado quando não.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Extrair de bancos, APIs, arquivos e SaaS</li>
+            <li>Carregar no data warehouse com histórico preservado</li>
+            <li>Transformar em modelos versionados, revisáveis como código</li>
+            <li>Testar o dado — unicidade, integridade, faixa esperada</li>
+            <li>Documentar linhagem: de onde veio cada coluna</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Conectores de origem · captura de mudanças (CDC) · orquestração de pipelines · camada de transformação e modelos · testes de qualidade · catálogo e linhagem · monitoramento de execução.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Sincroniza incrementalmente só o que mudou; adapta-se sozinho a mudança de esquema na origem; <strong>interrompe a carga quando um teste de qualidade falha</strong>, em vez de publicar dado errado; alerta o time responsável e refaz a janela quando a origem volta.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>Origem: todos os sistemas transacionais desta lista. Destino: data warehouse e BI. Vizinho: o MDM, que consome o dado consolidado para decidir o registro-ouro.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Relatório confiável porque o dado foi testado antes de chegar, e não conferido depois. Integração nova em dias em vez de projeto, e auditoria que consegue responder de onde veio o número.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="ipaas">
+        <div class="card-head">
+          <div class="sigla">iPaaS / ESB · Integration Platform</div>
+          <h3>Plataforma de integração</h3>
+          <div class="platform"><b>MuleSoft</b> — Salesforce · <b>Boomi</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Impedir que a arquitetura vire uma teia de conexões ponto a ponto. Com dez sistemas, ligar todos entre si dá 45 integrações; com um hub, dá dez. A diferença aparece na primeira vez que um sistema é trocado.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Expor e consumir APIs com contrato versionado</li>
+            <li>Transformar mensagens entre formatos e semânticas diferentes</li>
+            <li>Enfileirar eventos para desacoplar produtor e consumidor</li>
+            <li>Reprocessar mensagem falha sem perder transação</li>
+            <li>Monitorar tráfego, latência e erro por fluxo</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Gateway de API · motor de transformação e roteamento · fila e barramento de eventos · conectores prontos · catálogo de APIs · observabilidade e política de segurança.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Reenvia com espera progressiva quando o destino cai; <strong>isola em fila morta a mensagem que falha sempre</strong>, em vez de travar todas as outras; aplica limite de vazão e circuit breaker sozinho; garante entrega única mesmo com reenvio.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>Por definição, todos. Na prática: ERP ↔ MES, CRM ↔ OMS, WMS ↔ TMS, financeiro ↔ bancos, e todo parceiro externo que chega por API ou EDI.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Trocar um sistema sem reescrever a integração de todos os outros. Falha isolada em vez de propagada, e um lugar só para responder por que o pedido não chegou.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="bpm">
+        <div class="card-head">
+          <div class="sigla">BPM · Business Process Management</div>
+          <h3>Gestão de processos de negócio</h3>
+          <div class="platform"><b>Camunda</b> · <b>Pega</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Dar dono, prazo e medida ao processo que atravessa vários sistemas e várias áreas. Existe para os fluxos que nenhum sistema possui inteiro — e que, sem ele, vivem em e-mail e cobrança pessoal.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Desenhar o processo em notação padrão (BPMN) e executá-lo</li>
+            <li>Distribuir tarefas humanas com fila, prazo e substituto</li>
+            <li>Orquestrar chamadas a sistemas dentro do mesmo fluxo</li>
+            <li>Aplicar regras de decisão versionadas, separadas do código</li>
+            <li>Medir tempo por etapa e localizar o gargalo real</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Modelador de processos · motor de execução · lista de tarefas e formulários · motor de regras (DMN) · monitoramento e KPIs de processo · versionamento e migração de instâncias.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Encaminha cada etapa ao papel certo sem despacho manual; <strong>escala automaticamente quando o prazo estoura</strong>; decide por regra o que não precisa de humano e chama a pessoa só na exceção; compensa passos já executados quando o processo é cancelado no meio.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>Orquestra ERP, CRM, P2P, HCM e sistemas legados via iPaaS; usa o IAM para papéis e alçadas; publica métricas de processo no BI.</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Processo que se mede — e portanto se melhora. Fim do trabalho parado sem responsável identificado, e mudança de regra publicada em horas, sem release de sistema.</dd></div>
+        </dl>
+      </article>
+
+      <article class="sys" id="iam">
+        <div class="card-head">
+          <div class="sigla">IAM / SSO · Identity &amp; Access Management</div>
+          <h3>Identidade e controle de acesso</h3>
+          <div class="platform"><b>Okta</b> · <b>Microsoft Entra ID</b></div>
+        </div>
+        <dl class="facets">
+          <div class="facet"><dt>Propósito</dt><dd>Ter uma resposta única e verificável para quem é a pessoa e o que ela pode fazer, em todos os sistemas. É a fundação de qualquer conformidade: sem identidade central, nenhuma trilha de auditoria significa alguma coisa.</dd></div>
+          <div class="facet"><dt>Capacidades</dt><dd><ul>
+            <li>Login único (SSO) para todo o portfólio de aplicações</li>
+            <li>Múltiplo fator de autenticação e política de risco</li>
+            <li>Perfis e permissões por papel, geridos em um lugar só</li>
+            <li>Provisionamento e revogação no ciclo de vida do colaborador</li>
+            <li>Revisão periódica de acesso, com evidência para auditoria</li>
+          </ul></dd></div>
+          <div class="facet"><dt>Módulos</dt><dd>Diretório de identidades · autenticação e MFA · federação (SAML, OIDC) · provisionamento (SCIM) · governança e certificação de acesso · acesso privilegiado · registro de eventos.</dd></div>
+          <div class="facet"><dt>Automação</dt><dd>Cria os acessos no primeiro dia a partir do cargo no HCM e <strong>revoga todos eles no desligamento, no mesmo instante</strong>; exige segundo fator só quando o contexto é atípico; suspende conta após inatividade; dispara a campanha de revisão de acesso no calendário definido.</dd></div>
+          <div class="facet"><dt>Integrações</dt><dd>HCM (fonte da verdade sobre pessoas), todos os sistemas desta lista como consumidores, iPaaS (autenticação entre serviços), SIEM (eventos de segurança).</dd></div>
+          <div class="facet"><dt>Valor</dt><dd>Superfície de ataque reduzida ao que cada pessoa realmente precisa, auditoria de acesso respondida com relatório em vez de investigação, e menos chamado de senha — o item mais banal e mais caro do suporte.</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <div class="closing">
+      <h2>O que este mapa revela</h2>
+      <p>Lidas em conjunto, as dezessete fichas mostram um padrão: <strong>as camadas que menos aparecem em apresentação são as que sustentam todas as outras</strong>. MDM, integração e identidade não têm dono comercial óbvio, não geram demonstração impressionante e são exatamente o que separa uma arquitetura de um conjunto de sistemas que se conciliam por planilha.</p>
+      <p>O segundo padrão é a assimetria da automação. Nos sistemas maduros, o trabalho humano se concentra na exceção — o MDM só chama o curador na zona cinzenta, o P2P só chama o comprador quando a conciliação a três vias não fecha, o BPM só chama a pessoa quando a regra não decide. <strong>A medida de maturidade de cada camada é o quanto do fluxo normal roda sem ninguém olhar.</strong></p>
+      <p class="note">As plataformas citadas são as referências de mercado de cada categoria, escolhidas por representatividade e não por recomendação. A opção certa em cada camada depende de porte, setor regulatório e do que já existe instalado — e, com frequência, a decisão mais barata é não comprar a camada ainda.</p>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail li a'));
+    var map = {};
+    var targets = [];
+    links.forEach(function (a) {
+      var el = document.querySelector(a.getAttribute('href'));
+      if (el) { map[el.id] = a; targets.push(el); }
+    });
+    if (!('IntersectionObserver' in window) || !targets.length) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('on'); });
+          map[e.target.id].classList.add('on');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    targets.forEach(function (t) { io.observe(t); });
+  })();
+</script>
+</body>
+</html>
