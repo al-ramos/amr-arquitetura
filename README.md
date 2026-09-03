@@ -1,54 +1,77 @@
 # Anatomia da Stack Corporativa
 
-Referência executiva de arquitetura de sistemas corporativos. Dezessete categorias, das
-máquinas do chão de fábrica ao razão contábil, descritas por aquilo que produzem — não pelas
-siglas que carregam.
+Referência de arquitetura de sistemas corporativos. Dezessete categorias, das máquinas do chão
+de fábrica ao razão contábil, descritas por aquilo que produzem — não pelas siglas que carregam.
 
 **Página publicada:** https://al-ramos.github.io/amr-arquitetura/
 
-## O que o documento cobre
+## Dois níveis de leitura
 
-Cada ficha responde a seis perguntas sobre o sistema:
+**O índice** (`index.html`) traz as 17 fichas, cada uma com propósito, capacidades, módulos,
+automação, integrações e valor. É a visão comparável: as fichas têm tamanho semelhante de
+propósito, para que ERP e WMS possam ser lidos lado a lado.
 
-| Dimensão | Pergunta |
-|---|---|
-| Propósito | Por que este sistema existe? Que problema de negócio ele resolve? |
-| Capacidades | O que as pessoas efetivamente fazem nele? |
-| Módulos | De quais blocos ele é feito? |
-| Automação | O que roda sem intervenção humana? |
-| Integrações | Com quem ele conversa? |
-| Valor | O que sobra de resultado tangível? |
-
-## Os cinco domínios
-
-| Domínio | Sistemas |
-|---|---|
-| **Manufatura** | MES |
-| **Gestão corporativa** | ERP · CRM · HCM · MDM |
-| **Cadeia de suprimentos** | SCM · WMS · OMS · P2P · PIM |
-| **Financeiro e fiscal** | AP/AR · Fiscal BR |
-| **Dados e TI** | BI · ETL · iPaaS · BPM · IAM |
-
-O documento abre com um diagrama do trajeto de um pedido pela arquitetura — da oportunidade
-comercial à nota fiscal autorizada — porque o que dá valor à arquitetura não são as caixas, e
-sim o caminho entre elas.
+**Os dossiês** (`/mes/`, e demais conforme forem escritos) aprofundam um sistema por vez —
+modelo de dados, jornadas passo a passo, casos de borda, arquitetura de referência e
+especificidade brasileira. Cada ficha do índice linka para o seu dossiê.
 
 ## Estrutura
 
 ```
-index.html   página completa, sem dependências além das fontes do Google Fonts
+index.html          índice executivo com as 17 fichas
+assets/style.css    estilo compartilhado por todas as páginas
+content/*.md        fonte dos dossiês — um arquivo por sistema
+build.py            gera as páginas dos dossiês a partir de content/
+<slug>/index.html   dossiê publicado (gerado, não editar à mão)
 ```
 
-Nenhum build, nenhum framework. O arquivo é autocontido: todo o CSS e o JavaScript de navegação
-estão inline, e o diagrama é SVG escrito à mão. Funciona em tema claro e escuro conforme a
-preferência do sistema do leitor.
+## Como escrever um dossiê
+
+Crie `content/<slug>.md` com o cabeçalho:
+
+```yaml
+---
+sigla: WMS · Warehouse Management System
+titulo: Gestão de armazém
+plataforma: Manhattan Active WM
+dominio: Cadeia de suprimentos
+cor: sup          # fab | corp | sup | fin | ti
+resumo: uma frase que descreve o sistema
+---
+```
+
+Convenções no corpo:
+
+| Marcação | Efeito |
+|---|---|
+| `## Título` | Seção, entra no índice lateral automaticamente |
+| `::: nota` … `:::` | Caixa de destaque |
+| `::: interno` … `:::` | Só aparece na versão interna |
+| `{: .jornada }` após uma lista numerada | Vira jornada passo a passo, com numeração destacada |
+| Tabela Markdown | Tabela formatada |
+| `<figure>` com SVG inline | Diagrama |
+
+Depois rode:
+
+```bash
+python build.py          # todos
+python build.py wms      # só um
+```
+
+O script gera duas saídas por dossiê: a pública em `<slug>/index.html`, dentro do repositório,
+e a interna em `../Arquitetura-<SLUG>-INTERNO.html`, **fora** do repositório — autocontida, com
+o CSS embutido, contendo os blocos `::: interno`.
+
+Dependência: `pip install markdown`.
 
 ## Publicação
 
-Servido por GitHub Pages a partir da raiz do branch `main`. Qualquer push atualiza a página.
+GitHub Pages a partir da raiz do branch `main`. Qualquer push atualiza o site. Não há CI: rode
+`build.py` antes de commitar quando alterar um `.md`.
 
 ## Nota
 
-As plataformas citadas são as referências de mercado de cada categoria, escolhidas por
-representatividade e não por recomendação. A opção certa em cada camada depende de porte, setor
-regulatório e do que já existe instalado.
+As plataformas citadas são referências de mercado de cada categoria, escolhidas por
+representatividade e não por recomendação. O conteúdo descreve o funcionamento do tipo de
+sistema; nomes de módulo, licenciamento e limites técnicos de produto devem ser conferidos na
+documentação do fornecedor.
