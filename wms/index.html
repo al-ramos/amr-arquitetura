@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="O sistema que sabe onde cada item está fisicamente, quem o moveu e em que ordem separá-lo — e não apenas quanto existe no total.">
+<meta name="color-scheme" content="light dark">
+<title>Gestão de armazém — dossiê</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="dossie" style="--dom: var(--c-sup)">
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="voltar" href="../index.html#wms">&larr; Anatomia da Stack Corporativa</a>
+    <div class="eyebrow">Cadeia de suprimentos &middot; dossiê de aprofundamento</div>
+    <h1>Gestão de armazém</h1>
+    <p class="standfirst">O sistema que sabe onde cada item está fisicamente, quem o moveu e em que ordem separá-lo — e não apenas quanto existe no total.</p>
+    <div class="dossie-meta">
+      <span class="sigla">WMS · Warehouse Management System</span>
+      <span class="platform">Manhattan Active WM</span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="rail" aria-label="Seções deste dossiê">
+    <div class="rail-title">Neste dossiê</div>
+    <ul class="rail-secoes">
+        <li><a href="#s1"><span class="num">01</span>O problema numa operação real</a></li>
+        <li><a href="#s2"><span class="num">02</span>Anatomia funcional</a></li>
+        <li><a href="#s3"><span class="num">03</span>Modelo de dados essencial</a></li>
+        <li><a href="#s4"><span class="num">04</span>Jornadas passo a passo</a></li>
+        <li><a href="#s5"><span class="num">05</span>Regras de negócio e casos de borda</a></li>
+        <li><a href="#s6"><span class="num">06</span>Arquitetura de referência</a></li>
+        <li><a href="#s7"><span class="num">07</span>Especificidade brasileira</a></li>
+        <li><a href="#s8"><span class="num">08</span>Como avaliar ou construir</a></li>
+    </ul>
+  </nav>
+
+  <main class="prosa">
+    <h2 id="s1">O problema numa operação real</h2>
+    <p>Um centro de distribuição de 9.000 m², 8.000 SKUs ativos, 1.200 pedidos por dia, 40 separadores em dois turnos. Metade dos itens tem controle de lote e validade. O cliente maior exige entrega em 48 horas e aplica multa por divergência de nota.</p>
+    <p>Sem WMS, a operação funciona por conhecimento tácito. O separador experiente sabe que o item 4471 fica "lá no fundo, no corredor da esquerda, prateleira de cima". O ERP informa que existem 340 unidades no depósito 01 — número que está certo no total e é inútil na prática, porque não diz em quais três endereços elas estão nem qual lote vence primeiro.</p>
+    <p>O que isso produz:</p>
+    <p><strong>Tempo de deslocamento domina o custo.</strong> Numa separação sem roteiro, o operador percorre o corredor na ordem em que os itens aparecem no pedido, não na ordem em que estão no armazém. Em operação de médio porte, deslocamento costuma responder por mais da metade do tempo de separação — e é a parcela que o WMS ataca diretamente.</p>
+    <p><strong>O inventário exige parar.</strong> Sem endereçamento, contar significa contar tudo. A operação para um ou dois dias por ano, e o ajuste resultante entra na contabilidade como perda sem causa identificada.</p>
+    <p><strong>FEFO é uma intenção.</strong> Com controle de validade só no papel, o separador pega o que está na frente. O lote que vence primeiro fica no fundo até vencer, e a perda aparece no inventário seguinte.</p>
+    <p><strong>O erro de separação só aparece no cliente.</strong> Sem conferência sistêmica na saída, o item trocado viaja. Volta o frete de ida, o frete de volta, o retrabalho fiscal da devolução e uma ocorrência no indicador do cliente.</p>
+    <p><strong>A produtividade não é comparável.</strong> Não há como saber se o separador A é melhor que o B, ou se a diferença é o mix que cada um pegou. Dimensionamento de equipe vira negociação em vez de cálculo.</p>
+    <p>O WMS existe para transformar o armazém de um espaço que as pessoas conhecem num espaço que o sistema conhece — e, com isso, tornar a operação independente de quem está no turno.</p>
+    <aside class="cx cx-nota">
+    <p><strong>A confusão mais comum: "o ERP já controla o estoque".</strong> Controla o saldo, que é uma pergunta contábil. O WMS responde perguntas físicas: em qual endereço, em qual unidade de manuseio, com qual lote, em qual status, e qual tarefa está pendente sobre ele. São modelos de dados diferentes, não profundidades diferentes do mesmo modelo. Tentar cobrir WMS com o módulo de estoque do ERP costuma terminar em planilha paralela de endereçamento — que é o sintoma clássico.</p>
+    </aside>
+    <h2 id="s2">Anatomia funcional</h2>
+    <h3>Estrutura física e endereçamento</h3>
+    <p>O cadastro do armazém: prédios, áreas, corredores, ruas, módulos, níveis e posições, cada endereço com capacidade, restrição e perfil de uso. Define também as zonas — recebimento, reserva, separação, expedição, quarentena, avaria.</p>
+    <p>É o cadastro que sustenta tudo o mais. Quem usa: engenharia logística, na implantação e em cada mudança de layout.</p>
+    <h3>Recebimento e conferência</h3>
+    <p>Recebe o aviso de embarque ou o pedido de compra, agenda a doca, confere a chegada contra o documento e gera as unidades de manuseio. A conferência cega — em que o conferente informa o que contou sem ver o esperado — é o que diferencia conferência de confirmação.</p>
+    <h3>Armazenagem</h3>
+    <p>Decide o endereço de guarda por regra e dirige o operador até ele. Considera curva de giro, peso, volume, temperatura, incompatibilidade química e proximidade da área de separação.</p>
+    <h3>Separação</h3>
+    <p>O núcleo operacional. Converte pedidos em tarefas, agrupa em ondas, define a estratégia — por pedido, por lote de pedidos, por zona com consolidação — e sequencia o percurso. Suporta separação por RF, por voz, por luz e por estação de consolidação.</p>
+    <h3>Reposição</h3>
+    <p>Move material do estoque de reserva para a área de separação antes que ela zere. Roda por nível mínimo, por demanda da onda ou por previsão. É invisível quando funciona e paralisa a separação quando falta.</p>
+    <h3>Conferência de saída e expedição</h3>
+    <p>Confere o separado antes de embarcar, por leitura, peso ou volume; consolida por carga; gera o romaneio; controla o carregamento e libera a saída vinculada ao documento fiscal.</p>
+    <h3>Inventário</h3>
+    <p>Contagem rotativa por endereço, por curva ou por evento — sem parar a operação. Trata divergência com recontagem e ajuste com trilha.</p>
+    <h3>Gestão de mão de obra</h3>
+    <p>Padrão de tempo por tipo de tarefa, medição do realizado, e comparação por operador, turno e atividade. Base para dimensionamento e para programa de produtividade.</p>
+    <h3>Doca, pátio e agendamento</h3>
+    <p>Janela de chegada por fornecedor e transportadora, fila de veículos, ocupação de doca. Onde há volume, é o que impede o pátio de virar estacionamento.</p>
+    <h3>Logística reversa</h3>
+    <p>Recebimento de devolução, triagem, decisão de destino — reintegrar, reparar, descartar — e retorno ao estoque com o status correto.</p>
+    <h2 id="s3">Modelo de dados essencial</h2>
+    <p>A diferença entre um WMS e um controle de estoque endereçado está em duas entidades que raramente aparecem quando alguém desenha o sistema pela primeira vez: a <strong>unidade de manuseio</strong> e a <strong>tarefa</strong>.</p>
+    <figure>
+    <div class="figwrap">
+    <svg viewBox="0 0 920 470" role="img" aria-label="Modelo de dados do WMS: o saldo não é por item, e sim pela combinação de item, endereço, lote e status dentro de uma unidade de manuseio; a tarefa é a intenção de mover, e o movimento é o evento que a conclui.">
+      <defs>
+        <marker id="w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+    
+      <g fill="none" stroke="currentColor" stroke-width="1.4">
+        <rect x="20"  y="24"  width="170" height="58" rx="2"/>
+        <rect x="20"  y="130" width="170" height="58" rx="2"/>
+        <rect x="20"  y="236" width="170" height="58" rx="2"/>
+        <rect x="730" y="24"  width="170" height="58" rx="2"/>
+        <rect x="730" y="150" width="170" height="58" rx="2"/>
+        <rect x="380" y="366" width="170" height="58" rx="2"/>
+        <rect x="600" y="366" width="170" height="58" rx="2"/>
+      </g>
+      <rect x="330" y="120" width="270" height="86" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/>
+      <rect x="330" y="248" width="270" height="72" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/>
+    
+      <g font-family="Archivo, sans-serif" font-size="13" font-weight="700" fill="currentColor">
+        <text x="34" y="46">Item</text>
+        <text x="34" y="152">Endereço</text>
+        <text x="34" y="258">Lote / validade</text>
+        <text x="744" y="46">Unidade de manuseio</text>
+        <text x="744" y="172">Documento</text>
+        <text x="344" y="146">Saldo posicionado</text>
+        <text x="344" y="274">Tarefa</text>
+        <text x="394" y="388">Movimento</text>
+        <text x="614" y="388">Ajuste</text>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".6">
+        <text x="34" y="64">sku · unidade · giro</text>
+        <text x="34" y="170">rua · nível · capacidade</text>
+        <text x="34" y="276">fabricação · vencimento</text>
+        <text x="744" y="64">palete · caixa · contêiner</text>
+        <text x="744" y="76">a entidade esquecida</text>
+        <text x="744" y="190">recebimento · pedido</text>
+        <text x="344" y="164">item + endereço + lote +</text>
+        <text x="344" y="178">status + unidade = quantidade</text>
+        <text x="344" y="192">disponível | reservado | bloqueado</text>
+        <text x="344" y="292">a intenção de mover</text>
+        <text x="344" y="306">origem · destino · prioridade · quem</text>
+        <text x="394" y="406">o evento que executa</text>
+        <text x="614" y="406">divergência tratada</text>
+      </g>
+    
+      <g stroke="currentColor" stroke-width="1.3" marker-end="url(#w)">
+        <line x1="192" y1="53"  x2="328" y2="140"/>
+        <line x1="192" y1="159" x2="328" y2="159"/>
+        <line x1="192" y1="265" x2="328" y2="178"/>
+        <line x1="728" y1="53"  x2="602" y2="150"/>
+        <line x1="465" y1="208" x2="465" y2="246"/>
+        <line x1="728" y1="179" x2="602" y2="272"/>
+        <line x1="440" y1="322" x2="440" y2="364"/>
+        <line x1="520" y1="322" x2="640" y2="364"/>
+      </g>
+    
+      <g font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".8">
+        <text x="240" y="88">o quê</text>
+        <text x="240" y="150">onde</text>
+        <text x="240" y="230">qual lote</text>
+        <text x="640" y="92">dentro de</text>
+        <text x="474" y="232">reserva</text>
+        <text x="640" y="238">origina</text>
+        <text x="448" y="348">conclui</text>
+        <text x="576" y="348">corrige</text>
+      </g>
+    </svg>
+    </div>
+    <figcaption>O saldo não pertence ao item: pertence à combinação de item, endereço, lote, status e unidade de manuseio. A tarefa é a intenção de mover — criada pela reserva, executada pelo movimento. Separar as duas é o que permite planejar trabalho sem ter executado nada ainda.</figcaption>
+    </figure>
+    
+    <p>Três decisões definem a qualidade do sistema:</p>
+    <p><strong>A unidade de manuseio é uma entidade, não um atributo.</strong> Um palete identificado por etiqueta própria pode conter vários itens e vários lotes, mover-se inteiro numa tarefa e ser conferido por um único código. Sem essa entidade, cada movimentação de palete vira N movimentações de item, o volume de transações explode e a conferência deixa de ser possível numa leitura só. É a decisão que mais separa WMS de controle endereçado.</p>
+    <p><strong>Status faz parte da chave do saldo.</strong> Disponível, reservado, em quarentena, bloqueado por qualidade, em avaria. Guardar status como campo booleano de bloqueio força consultas erradas: a pergunta "quanto tenho disponível para vender" tem resposta diferente de "quanto tenho fisicamente", e as duas precisam sair do mesmo modelo.</p>
+    <p><strong>Tarefa separada de movimento.</strong> A tarefa é o trabalho planejado — origem, destino, prioridade, responsável, prazo. O movimento é o fato consumado. Modelar as duas como uma coisa só impede fila de trabalho, redistribuição de tarefa entre operadores e medição de produtividade, que são metade do valor do sistema.</p>
+    <h2 id="s4">Jornadas passo a passo</h2>
+    <h3>A. Recebimento e armazenagem</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Transportadora</strong> chega; <strong>portaria</strong> registra a entrada e o veículo entra na fila do agendamento.</li>
+    <li><strong>Sistema</strong> aloca a doca conforme a janela agendada e o tipo de carga.</li>
+    <li><strong>Conferente</strong> abre o recebimento pelo coletor, informando o documento de entrada.</li>
+    <li><strong>Sistema</strong> apresenta o esperado — ou não apresenta nada, se a política for conferência cega.</li>
+    <li><strong>Conferente</strong> conta e informa item, quantidade, lote e validade. Em item com controle, o lote é obrigatório e a validade é validada contra o prazo mínimo aceito.</li>
+    <li><strong>Sistema</strong> compara com o esperado e trata a divergência: aceita dentro da tolerância, ou abre ocorrência e segura o recebimento.</li>
+    <li><strong>Conferente</strong> monta o palete e o sistema gera a <strong>unidade de manuseio</strong>, com etiqueta impressa e colada ali mesmo.</li>
+    <li><strong>Sistema</strong> decide o endereço de guarda pela regra do item — giro, peso, temperatura, incompatibilidade — e cria a tarefa de armazenagem.</li>
+    <li><strong>Operador de empilhadeira</strong> recebe a tarefa no coletor, leva o palete, bipa o endereço de destino e confirma.</li>
+    <li><strong>Sistema</strong> valida se o endereço bipado é o dirigido; se não for, exige justificativa e registra o desvio.</li>
+    </ol>
+    </div>
+    <h3>B. Separação por onda</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Supervisor</strong> ou o próprio sistema fecha uma onda: um conjunto de pedidos que serão separados juntos, agrupados por rota, transportadora ou horário de corte.</li>
+    <li><strong>Sistema</strong> verifica disponibilidade, reserva o saldo por lote segundo a política — FEFO na maioria dos casos — e gera as tarefas de separação.</li>
+    <li><strong>Sistema</strong> dispara as tarefas de reposição necessárias para que a área de separação suporte a onda, e as executa antes.</li>
+    <li><strong>Sistema</strong> sequencia as tarefas por percurso, minimizando deslocamento, e as distribui por zona ou por operador.</li>
+    <li><strong>Separador</strong> recebe a primeira tarefa no coletor: endereço, item, quantidade.</li>
+    <li><strong>Separador</strong> vai ao endereço, bipa o endereço, bipa o item e informa a quantidade. As três leituras são o que garante que ele pegou o item certo no lugar certo.</li>
+    <li><strong>Sistema</strong> valida e apresenta a próxima tarefa, já na sequência do percurso.</li>
+    <li><strong>Separador</strong> conclui a rota e leva o volume à área de consolidação.</li>
+    <li><strong>Conferente</strong> confere a saída — por leitura item a item, por peso do volume ou por amostragem, conforme a criticidade.</li>
+    <li><strong>Sistema</strong> libera a expedição e vincula a carga ao documento fiscal.</li>
+    </ol>
+    </div>
+    <h3>C. Inventário rotativo</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Sistema</strong> seleciona endereços para contagem por critério: curva A semanalmente, endereço zerado após a última retirada, endereço com divergência recente, ou amostragem aleatória.</li>
+    <li><strong>Sistema</strong> bloqueia o endereço para movimentação e gera a tarefa de contagem.</li>
+    <li><strong>Contador</strong> vai ao endereço, bipa e informa o que encontrou, sem ver o saldo esperado.</li>
+    <li><strong>Sistema</strong> compara. Se bate, libera o endereço e encerra.</li>
+    <li><strong>Sistema</strong> dispara recontagem quando diverge, preferencialmente com outro operador.</li>
+    <li><strong>Supervisor</strong> analisa a divergência confirmada e aprova o ajuste, que registra responsável, motivo e valor.</li>
+    <li><strong>Sistema</strong> envia o ajuste ao ERP para o efeito contábil e libera o endereço.</li>
+    </ol>
+    </div>
+    <h3>D. Devolução</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Sistema</strong> recebe a autorização de devolução, vinda do OMS ou do atendimento.</li>
+    <li><strong>Conferente</strong> recebe o volume, bipa a identificação e o sistema recupera o pedido de origem.</li>
+    <li><strong>Conferente</strong> tria o material: íntegro, avariado, faltando peça, produto errado.</li>
+    <li><strong>Sistema</strong> direciona por status — íntegro volta ao estoque disponível; avariado vai para a área de avaria; item com lote vencido é bloqueado para descarte.</li>
+    <li><strong>Sistema</strong> informa ao ERP e ao fiscal o retorno, para o crédito e para a nota de entrada.</li>
+    </ol>
+    </div>
+    <h2 id="s5">Regras de negócio e casos de borda</h2>
+    <table>
+    <thead>
+    <tr>
+    <th>Situação</th>
+    <th>Tratamento esperado</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>Endereço bipado diferente do dirigido</td>
+    <td>Permite com justificativa registrada, ou bloqueia — conforme a política. Bloquear sempre trava a operação em exceções legítimas; permitir sem registro destrói a acuracidade.</td>
+    </tr>
+    <tr>
+    <td>Saldo insuficiente no endereço durante a separação</td>
+    <td>Tarefa é replanejada para outro endereço com o mesmo lote, sem devolver o pedido para a fila. Se não houver, gera falta com registro, não silêncio.</td>
+    </tr>
+    <tr>
+    <td>Lote mais novo na frente do mais velho</td>
+    <td>O FEFO é aplicado na reserva, não na escolha do separador. Se o sistema dirigir para o endereço do lote correto, a política se cumpre sozinha.</td>
+    </tr>
+    <tr>
+    <td>Item sem endereço definido chega no recebimento</td>
+    <td>Vai para área de espera com tarefa de cadastro, nunca para um endereço genérico — o "endereço geral" é onde a acuracidade morre.</td>
+    </tr>
+    <tr>
+    <td>Unidade de manuseio parcialmente consumida</td>
+    <td>O palete permanece como unidade, com saldo reduzido. Fracionar não pode significar perder a identidade da unidade.</td>
+    </tr>
+    <tr>
+    <td>Pedido cancelado depois de separado</td>
+    <td>A reserva é liberada e é criada tarefa de retorno ao endereço. Sem essa tarefa, o material fica na consolidação e some do saldo disponível.</td>
+    </tr>
+    <tr>
+    <td>Divergência de inventário recorrente no mesmo endereço</td>
+    <td>Sinaliza causa sistêmica — endereço mal cadastrado, item parecido ao lado, leitura duplicada. Ajustar sem investigar reincidência é maquiagem.</td>
+    </tr>
+    <tr>
+    <td>Coletor sem rede no meio da rota</td>
+    <td>Continua operando com as tarefas já baixadas e sincroniza ao reconectar. A tarefa concluída offline não pode ser reatribuída a outro operador enquanto não sincroniza.</td>
+    </tr>
+    <tr>
+    <td>Dois operadores na mesma tarefa</td>
+    <td>Atribuição exclusiva com bloqueio. Sem isso, o mesmo endereço é separado duas vezes e a divergência aparece no fim do dia.</td>
+    </tr>
+    <tr>
+    <td>Nota fiscal emitida antes da conferência de saída</td>
+    <td>Inverte o risco: se a conferência acusar diferença, a nota já está autorizada e exige cancelamento ou nota complementar. A emissão deve seguir a conferência, não precedê-la.</td>
+    </tr>
+    <tr>
+    <td>Produto com validade curta na entrada</td>
+    <td>Regra de prazo mínimo de aceite no recebimento, recusando o que não sobrevive ao ciclo de venda.</td>
+    </tr>
+    <tr>
+    <td>Avaria identificada na separação</td>
+    <td>Bloqueia a unidade, gera tarefa de reposição do item para completar o pedido e abre ocorrência — três ações, não uma.</td>
+    </tr>
+    </tbody>
+    </table>
+    <h2 id="s6">Arquitetura de referência</h2>
+    <p><strong>O coletor é o cliente principal, e ele opera mal conectado.</strong> A rede sem fio de um armazém tem sombras — estruturas metálicas, câmaras frias, corredores altos. O desenho precisa assumir desconexão momentânea: tarefas baixadas em bloco, confirmação em fila local, sincronização idempotente. Um WMS que exige conexão contínua é abandonado nas primeiras semanas.</p>
+    <p><strong>A tela do coletor tem restrições próprias.</strong> Poucos campos, alvo grande, fluxo dirigido por leitura, nenhuma navegação livre. O operador está de luva, às vezes no frio, e a métrica que importa é leituras por tarefa — não cliques por página.</p>
+    <p><strong>Concorrência é o problema técnico central.</strong> Quarenta operadores disputando o mesmo saldo exigem reserva atômica no momento de gerar a tarefa. Reservar por consulta e depois gravar produz separação dupla. Este é o ponto em que implementações internas costumam falhar sob carga real.</p>
+    <p><strong>Volume transacional é alto e desigual.</strong> Mil e duzentos pedidos com média de seis linhas dão 7.200 tarefas de separação por dia, mais reposição, mais armazenagem, mais contagem — e tudo se concentra nas horas anteriores ao corte de transportadora. Dimensionar pela média subdimensiona o pico.</p>
+    <p><strong>Integração com o ERP é assíncrona, com reconciliação.</strong> O WMS é a autoridade sobre a posição física; o ERP, sobre o saldo contábil. Divergem por alguns minutos por natureza. O que não pode é divergir por dias sem que ninguém perceba — daí a reconciliação periódica.</p>
+    <p><strong>Automação física entra por uma camada isolada.</strong> Esteiras, separadores automáticos, AGVs e coletores de voz têm protocolos próprios e ciclos de vida diferentes do software. Acoplar direto significa reescrever o WMS quando o equipamento muda.</p>
+    <p><strong>A impressão é infraestrutura crítica.</strong> Etiqueta de unidade de manuseio, etiqueta de volume, romaneio. Fila de impressão local, com reimpressão controlada — reimprimir etiqueta de unidade sem invalidar a anterior cria duas unidades com o mesmo código, que é um erro difícil de rastrear depois.</p>
+    <aside class="cx cx-nota">
+    <p><strong>Onde o projeto costuma descarrilar.</strong> Não é no software: é no cadastro do armazém e na disciplina de endereçamento. Um WMS implantado sobre um layout mal mapeado, com endereços que não correspondem à realidade física, produz dirigimento errado — e o operador aprende em uma semana a ignorar o sistema. A implantação é, na maior parte, um projeto de engenharia logística com um software no fim.</p>
+    </aside>
+    <h2 id="s7">Especificidade brasileira</h2>
+    <p><strong>A expedição é amarrada ao documento fiscal.</strong> No Brasil a mercadoria não sai sem NF-e autorizada, e em transporte de carga sem CT-e e MDF-e. Isso torna a integração fiscal parte do fluxo de expedição, e não um passo administrativo posterior. O sequenciamento correto é conferência, depois emissão, depois carregamento — inverter cria o risco de nota autorizada para carga que não confere.</p>
+    <p><strong>Armazém geral e operador logístico têm regime próprio.</strong> Mercadoria de terceiro guardada em nome do depositante exige controle de propriedade separado do controle físico, com CFOP e notas específicas de remessa e retorno. Um WMS usado por operador logístico precisa segregar estoque por cliente e emitir a documentação correspondente.</p>
+    <p><strong>Rastreabilidade sanitária.</strong> Alimentos, bebidas, medicamentos e cosméticos têm exigência de lote e prazo de validade sob normas da Anvisa e do Mapa, com obrigação de recall rastreável. O controle de lote deixa de ser boa prática e vira requisito legal.</p>
+    <p><strong>Substituição tributária afeta o que se pode movimentar.</strong> Mercadoria com ICMS-ST recolhido antecipadamente tem restrição de destino e de operação. O WMS não calcula tributo, mas precisa carregar o atributo que impede a expedição indevida.</p>
+    <p><strong>Bloco K, quando o armazém alimenta produção.</strong> Se o mesmo armazém abastece uma fábrica, o consumo movimentado pelo WMS entra na declaração de consumo do Bloco K. O vínculo entre movimentação física e declaração fiscal precisa existir desde o começo.</p>
+    <h2 id="s8">Como avaliar ou construir</h2>
+    <ul>
+    <li>A unidade de manuseio existe como entidade própria, com identificação física e movimentação em bloco?</li>
+    <li>O saldo é chaveado por item, endereço, lote e status — ou só por item e depósito?</li>
+    <li>A reserva é atômica sob concorrência? Teste com quarenta separadores simultâneos, não com dois.</li>
+    <li>O coletor opera desconectado e sincroniza sem duplicar movimento?</li>
+    <li>Tarefa e movimento são entidades separadas?</li>
+    <li>O roteiro de separação é otimizado por percurso, ou apenas ordenado por código de endereço?</li>
+    <li>O inventário rotativo roda sem bloquear o armazém inteiro?</li>
+    <li>A conferência de saída precede a emissão da nota?</li>
+    <li>Há padrão de tempo por tipo de tarefa, permitindo medir produtividade de forma comparável?</li>
+    <li>O sistema segrega estoque por proprietário, se houver operação para terceiros?</li>
+    </ul>
+    <p class="note">As plataformas citadas são referências de mercado da categoria, não recomendações. O conteúdo descreve o funcionamento do tipo de sistema; nomes de módulo, licenciamento e limites técnicos de produto devem ser conferidos na documentação do fornecedor.</p>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail-secoes a'));
+    var map = {}, alvos = [];
+    links.forEach(function (a) {
+      var el = document.querySelector(a.getAttribute('href'));
+      if (el) { map[el.id] = a; alvos.push(el); }
+    });
+    if (!('IntersectionObserver' in window) || !alvos.length) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('on'); });
+          map[e.target.id].classList.add('on');
+        }
+      });
+    }, { rootMargin: '-12% 0px -70% 0px', threshold: 0 });
+    alvos.forEach(function (t) { io.observe(t); });
+  })();
+</script>
+</body>
+</html>
