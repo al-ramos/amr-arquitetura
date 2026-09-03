@@ -353,6 +353,36 @@
     padding-left: 14px;
     max-width: 72ch;
   }
+
+  /* ---- botao copiar ---- */
+  .card-head { position: relative; padding-right: 104px; }
+  .copybtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: color .12s, border-color .12s, background .12s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .copybtn:hover { color: var(--ink); border-color: var(--ink-faint); background: var(--surface-2); }
+  .copybtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .copybtn svg { width: 12px; height: 12px; flex: none; }
+  .copybtn.done { color: var(--ok); border-color: var(--ok); }
+  @media print { .copybtn { display: none; } }
 </style>
 </head>
 <body>
@@ -981,6 +1011,124 @@
       });
     }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
     targets.forEach(function (t) { io.observe(t); });
+  })();
+</script>
+
+<script>
+  (function () {
+    var ICON_COPY = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="5.5" y="5.5" width="8" height="8" rx="1.4"/>' +
+      '<path d="M10.5 5.5v-2a1.4 1.4 0 0 0-1.4-1.4H3.9A1.4 1.4 0 0 0 2.5 3.5v5.2a1.4 1.4 0 0 0 1.4 1.4h1.6"/></svg>';
+    var ICON_DONE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>';
+
+    function clean(el) {
+      return (el.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function renderDD(dd) {
+      var out = [];
+      var lists = dd.querySelectorAll('ul');
+      if (lists.length) {
+        Array.prototype.forEach.call(lists, function (ul) {
+          Array.prototype.forEach.call(ul.children, function (li) {
+            out.push('- ' + clean(li));
+          });
+        });
+        return out.join('\n');
+      }
+      var ps = dd.querySelectorAll('p');
+      if (ps.length) {
+        Array.prototype.forEach.call(ps, function (p) { out.push(clean(p)); });
+        return out.join('\n\n');
+      }
+      return clean(dd);
+    }
+
+    function toMarkdown(art) {
+      var L = [];
+      var h3 = art.querySelector('.card-head h3');
+      var sig = art.querySelector('.card-head .sigla');
+      var plat = art.querySelector('.card-head .platform');
+      if (h3) L.push('## ' + clean(h3));
+      var sub = [];
+      if (sig) sub.push(clean(sig));
+      if (plat) sub.push(clean(plat));
+      if (sub.length) L.push(sub.join(' — '));
+
+      Array.prototype.forEach.call(art.querySelectorAll('.facet'), function (f) {
+        var dt = f.querySelector('dt'), dd = f.querySelector('dd');
+        if (!dt || !dd) return;
+        L.push('');
+        L.push('### ' + clean(dt));
+        L.push(renderDD(dd));
+      });
+
+      var amr = art.querySelector('.amr-block') || art.querySelector('.card-foot');
+      if (amr) {
+        L.push('');
+        L.push('### Posição do AMR');
+        var chip = amr.querySelector('.chip');
+        var ps = amr.querySelectorAll('p');
+        if (ps.length) {
+          if (chip) L.push('**' + clean(chip) + '**');
+          Array.prototype.forEach.call(ps, function (p) { L.push(clean(p)); });
+        } else {
+          L.push(clean(amr));
+        }
+      }
+      return L.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+    }
+
+    function legacyCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    function flash(btn, ok) {
+      var original = btn.innerHTML;
+      btn.innerHTML = ok ? ICON_DONE + '<span>copiado</span>' : '<span>falhou</span>';
+      btn.classList.toggle('done', ok);
+      setTimeout(function () {
+        btn.innerHTML = original;
+        btn.classList.remove('done');
+      }, 1600);
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('article.sys'), function (art) {
+      var head = art.querySelector('.card-head');
+      if (!head) return;
+      var h3 = art.querySelector('.card-head h3');
+      var nome = h3 ? clean(h3) : 'ficha';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copybtn';
+      btn.innerHTML = ICON_COPY + '<span>copiar</span>';
+      btn.setAttribute('aria-label', 'Copiar a ficha ' + nome + ' como Markdown');
+      btn.title = 'Copiar esta ficha como Markdown';
+      btn.addEventListener('click', function () {
+        var md = toMarkdown(art);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(md).then(
+            function () { flash(btn, true); },
+            function () { flash(btn, legacyCopy(md)); }
+          );
+        } else {
+          flash(btn, legacyCopy(md));
+        }
+      });
+      head.appendChild(btn);
+    });
   })();
 </script>
 </body>
