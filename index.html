@@ -383,6 +383,12 @@
   .copybtn svg { width: 12px; height: 12px; flex: none; }
   .copybtn.done { color: var(--ok); border-color: var(--ok); }
   @media print { .copybtn { display: none; } }
+  @media (max-width: 620px) {
+    .card-head { padding-right: 58px; }
+    .copybtn { top: 14px; right: 14px; padding: 6px 8px; }
+    .copybtn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .copybtn svg { width: 13px; height: 13px; }
+  }
 </style>
 </head>
 <body>
