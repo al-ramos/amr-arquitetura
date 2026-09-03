@@ -47,7 +47,7 @@ Convenções no corpo:
 | `## Título` | Seção, entra no índice lateral automaticamente |
 | `::: nota` … `:::` | Caixa de destaque |
 | `::: interno` … `:::` | Só aparece na versão interna |
-| `{: .jornada }` após uma lista numerada | Vira jornada passo a passo, com numeração destacada |
+| `::: jornada` … `:::` em volta de uma lista numerada | Vira jornada passo a passo, com numeração destacada |
 | Tabela Markdown | Tabela formatada |
 | `<figure>` com SVG inline | Diagrama |
 

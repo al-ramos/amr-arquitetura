@@ -168,6 +168,7 @@
     <p><strong>Estado é derivado, não armazenado.</strong> A quantidade produzida de uma ordem é a soma dos apontamentos, não um campo que alguém incrementa. Guardar o estado como campo cria a divergência clássica entre o total e a soma dos lançamentos, que ninguém consegue explicar seis meses depois. Onde a performance exigir, guarda-se um agregado — mas como cache reconstruível, nunca como verdade.</p>
     <h2 id="s4">Jornadas passo a passo</h2>
     <h3>A. Início de turno e liberação de operação</h3>
+    <div class="jornada">
     <ol>
     <li><strong>Operador</strong> aproxima o crachá ou bipa seu código no terminal do posto.</li>
     <li><strong>Sistema</strong> identifica a pessoa, verifica se ela está habilitada para aquele recurso e se as certificações estão válidas. Se alguma venceu, bloqueia e notifica o líder do turno.</li>
@@ -176,9 +177,11 @@
     <li><strong>Sistema</strong> verifica pré-condições: a operação anterior do roteiro está concluída? A ferramenta montada é a prevista e está dentro da vida útil? O material apresentado corresponde ao componente da lista? Se qualquer uma falha, bloqueia com a mensagem específica — nunca com "erro".</li>
     <li><strong>Sistema</strong> apresenta a instrução eletrônica de trabalho na versão vigente para aquele item, incluindo desenho e parâmetros.</li>
     <li><strong>Operador</strong> confirma o setup. Em item crítico, o sistema exige inspeção de primeira peça antes de liberar a produção seriada.</li>
-    <li class="jornada"><strong>Sistema</strong> registra o evento de início e passa a operação para o estado em execução.</li>
+    <li><strong>Sistema</strong> registra o evento de início e passa a operação para o estado em execução.</li>
     </ol>
+    </div>
     <h3>B. Execução e apontamento</h3>
+    <div class="jornada">
     <ol>
     <li><strong>Operador</strong> produz a peça.</li>
     <li><strong>Máquina</strong> envia o contador de ciclo e os parâmetros do processo pela camada de automação, ou o operador informa a quantidade no terminal quando não há coleta automática.</li>
@@ -187,24 +190,29 @@
     <li><strong>Operador</strong> informa a quantidade aprovada e, separadamente, a refugada, escolhendo o motivo numa lista curta e específica — motivo genérico destrói o valor do dado.</li>
     <li><strong>Sistema</strong> grava o apontamento como evento imutável, atualiza o WIP, consome os componentes da lista de materiais na proporção produzida e registra a genealogia entre a unidade produzida e os lotes consumidos.</li>
     <li><strong>Sistema</strong> imprime a etiqueta de identificação com o código da unidade, se o processo exigir.</li>
-    <li class="jornada"><strong>Operador</strong> encerra a operação; a unidade fica disponível para a operação seguinte do roteiro.</li>
+    <li><strong>Operador</strong> encerra a operação; a unidade fica disponível para a operação seguinte do roteiro.</li>
     </ol>
+    </div>
     <h3>C. Não conformidade e disposição</h3>
+    <div class="jornada">
     <ol>
     <li><strong>Operador</strong> ou <strong>inspetor</strong> registra o defeito, com foto e medida quando aplicável.</li>
     <li><strong>Sistema</strong> coloca a unidade em contenção: ela não avança no roteiro e não pode ser consumida por nenhuma outra ordem.</li>
     <li><strong>Sistema</strong> identifica automaticamente, pela genealogia, quais outras unidades compartilham o lote de origem, o mesmo recurso ou a mesma janela de tempo — a base para decidir a abrangência da contenção.</li>
     <li><strong>Qualidade</strong> analisa e decide a disposição: usar como está, retrabalhar, refugar ou devolver ao fornecedor.</li>
     <li><strong>Sistema</strong> encaminha conforme a decisão. Em retrabalho, abre o roteiro de retrabalho e mantém o vínculo com a ordem original — a peça retrabalhada continua sendo a mesma peça, com histórico acrescido.</li>
-    <li class="jornada"><strong>Sistema</strong> mantém o registro completo: quem identificou, quem decidiu, com que fundamento e quando.</li>
+    <li><strong>Sistema</strong> mantém o registro completo: quem identificou, quem decidiu, com que fundamento e quando.</li>
     </ol>
+    </div>
     <h3>D. Encerramento e devolução ao ERP</h3>
+    <div class="jornada">
     <ol>
     <li><strong>Sistema</strong> detecta que a quantidade da última operação atingiu a quantidade da ordem, ou o supervisor encerra manualmente com quantidade menor.</li>
     <li><strong>Sistema</strong> consolida os apontamentos e envia ao ERP a confirmação de produção, o consumo real de componentes e o refugo por motivo.</li>
     <li><strong>ERP</strong> baixa o estoque de componentes, entra com o produto acabado e apura o custo real da ordem.</li>
-    <li class="jornada"><strong>Sistema</strong> fecha a ordem e mantém a genealogia disponível para consulta pelo prazo definido — que em automotivo costuma ser quinze anos.</li>
+    <li><strong>Sistema</strong> fecha a ordem e mantém a genealogia disponível para consulta pelo prazo definido — que em automotivo costuma ser quinze anos.</li>
     </ol>
+    </div>
     <h2 id="s5">Regras de negócio e casos de borda</h2>
     <p>O que separa um MES que funciona de uma prova de conceito é o tratamento destas situações. Todas acontecem toda semana.</p>
     <table>

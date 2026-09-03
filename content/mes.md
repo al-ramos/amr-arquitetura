@@ -173,6 +173,7 @@ Três decisões de modelagem definem o destino do projeto:
 
 ### A. Início de turno e liberação de operação
 
+::: jornada
 1. **Operador** aproxima o crachá ou bipa seu código no terminal do posto.
 2. **Sistema** identifica a pessoa, verifica se ela está habilitada para aquele recurso e se as certificações estão válidas. Se alguma venceu, bloqueia e notifica o líder do turno.
 3. **Sistema** apresenta a fila de operações daquele recurso, na sequência definida pelo planejamento, com a próxima destacada.
@@ -181,10 +182,11 @@ Três decisões de modelagem definem o destino do projeto:
 6. **Sistema** apresenta a instrução eletrônica de trabalho na versão vigente para aquele item, incluindo desenho e parâmetros.
 7. **Operador** confirma o setup. Em item crítico, o sistema exige inspeção de primeira peça antes de liberar a produção seriada.
 8. **Sistema** registra o evento de início e passa a operação para o estado em execução.
-{: .jornada }
+:::
 
 ### B. Execução e apontamento
 
+::: jornada
 1. **Operador** produz a peça.
 2. **Máquina** envia o contador de ciclo e os parâmetros do processo pela camada de automação, ou o operador informa a quantidade no terminal quando não há coleta automática.
 3. **Sistema** vincula cada parâmetro à operação, ao recurso e à unidade corrente, e compara com a faixa especificada.
@@ -193,25 +195,27 @@ Três decisões de modelagem definem o destino do projeto:
 6. **Sistema** grava o apontamento como evento imutável, atualiza o WIP, consome os componentes da lista de materiais na proporção produzida e registra a genealogia entre a unidade produzida e os lotes consumidos.
 7. **Sistema** imprime a etiqueta de identificação com o código da unidade, se o processo exigir.
 8. **Operador** encerra a operação; a unidade fica disponível para a operação seguinte do roteiro.
-{: .jornada }
+:::
 
 ### C. Não conformidade e disposição
 
+::: jornada
 1. **Operador** ou **inspetor** registra o defeito, com foto e medida quando aplicável.
 2. **Sistema** coloca a unidade em contenção: ela não avança no roteiro e não pode ser consumida por nenhuma outra ordem.
 3. **Sistema** identifica automaticamente, pela genealogia, quais outras unidades compartilham o lote de origem, o mesmo recurso ou a mesma janela de tempo — a base para decidir a abrangência da contenção.
 4. **Qualidade** analisa e decide a disposição: usar como está, retrabalhar, refugar ou devolver ao fornecedor.
 5. **Sistema** encaminha conforme a decisão. Em retrabalho, abre o roteiro de retrabalho e mantém o vínculo com a ordem original — a peça retrabalhada continua sendo a mesma peça, com histórico acrescido.
 6. **Sistema** mantém o registro completo: quem identificou, quem decidiu, com que fundamento e quando.
-{: .jornada }
+:::
 
 ### D. Encerramento e devolução ao ERP
 
+::: jornada
 1. **Sistema** detecta que a quantidade da última operação atingiu a quantidade da ordem, ou o supervisor encerra manualmente com quantidade menor.
 2. **Sistema** consolida os apontamentos e envia ao ERP a confirmação de produção, o consumo real de componentes e o refugo por motivo.
 3. **ERP** baixa o estoque de componentes, entra com o produto acabado e apura o custo real da ordem.
 4. **Sistema** fecha a ordem e mantém a genealogia disponível para consulta pelo prazo definido — que em automotivo costuma ser quinze anos.
-{: .jornada }
+:::
 
 ## Regras de negócio e casos de borda
 

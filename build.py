@@ -59,6 +59,8 @@ def blocos(corpo, interno):
             if not interno:
                 return ""
             return '<div class="bloco-interno" markdown="1">\n%s\n</div>' % dentro
+        if tipo == "jornada":
+            return '<div class="jornada" markdown="1">\n%s\n</div>' % dentro
         return '<aside class="cx cx-%s" markdown="1">\n%s\n</aside>' % (tipo, dentro)
 
     anterior = None

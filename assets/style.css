@@ -467,22 +467,22 @@
   }
 
   /* jornadas passo a passo */
-  ol.jornada {
+  .jornada ol {
     list-style: none;
     counter-reset: passo;
     margin: 0 0 18px;
     padding: 0;
     border-left: 2px solid var(--rule);
   }
-  ol.jornada li {
+  .jornada ol li {
     counter-increment: passo;
     position: relative;
     padding: 0 0 16px 44px;
     color: var(--ink-soft);
     line-height: 1.55;
   }
-  ol.jornada li:last-child { padding-bottom: 0; }
-  ol.jornada li::before {
+  .jornada ol li:last-child { padding-bottom: 0; }
+  .jornada ol li::before {
     content: counter(passo, decimal-leading-zero);
     position: absolute;
     left: -13px;
@@ -496,7 +496,7 @@
     background: var(--paper);
     padding: 1px 0;
   }
-  ol.jornada li strong { color: var(--ink); font-weight: 700; }
+  .jornada ol li strong { color: var(--ink); font-weight: 700; }
 
   /* tabelas do dossiê */
   main.prosa table {
