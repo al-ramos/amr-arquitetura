@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A única camada da arquitetura em que a falha não gera ineficiência — gera multa, crédito perdido e caminhão parado na estrada.">
+<meta name="color-scheme" content="light dark">
+<title>Emissão e escrituração fiscal — dossiê</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="dossie" style="--dom: var(--c-fin)">
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="voltar" href="../index.html#fiscal">&larr; Anatomia da Stack Corporativa</a>
+    <div class="eyebrow">Financeiro e fiscal &middot; dossiê de aprofundamento</div>
+    <h1>Emissão e escrituração fiscal</h1>
+    <p class="standfirst">A única camada da arquitetura em que a falha não gera ineficiência — gera multa, crédito perdido e caminhão parado na estrada.</p>
+    <div class="dossie-meta">
+      <span class="sigla">Fiscal BR · Compliance tributário brasileiro</span>
+      <span class="platform">TOTVS Fiscal · Sovos · Synchro</span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="rail" aria-label="Seções deste dossiê">
+    <div class="rail-title">Neste dossiê</div>
+    <ul class="rail-secoes">
+        <li><a href="#s1"><span class="num">01</span>O problema numa operação real</a></li>
+        <li><a href="#s2"><span class="num">02</span>Anatomia funcional</a></li>
+        <li><a href="#s3"><span class="num">03</span>Modelo de dados essencial</a></li>
+        <li><a href="#s4"><span class="num">04</span>Jornadas passo a passo</a></li>
+        <li><a href="#s5"><span class="num">05</span>Regras de negócio e casos de borda</a></li>
+        <li><a href="#s6"><span class="num">06</span>Arquitetura de referência</a></li>
+        <li><a href="#s7"><span class="num">07</span>Especificidade brasileira</a></li>
+        <li><a href="#s8"><span class="num">08</span>Como avaliar ou construir</a></li>
+    </ul>
+  </nav>
+
+  <main class="prosa">
+    <h2 id="s1">O problema numa operação real</h2>
+    <p>Uma indústria com fábrica em Minas, centro de distribuição em São Paulo e vendas para dezoito estados. Quatrocentas notas por dia, mix de venda direta, transferência entre filiais, remessa para industrialização em terceiro e devolução. Regime de lucro real.</p>
+    <p>Cada uma dessas quatrocentas notas exige uma decisão tributária composta: qual CFOP, qual CST, qual alíquota de ICMS considerando a origem, o destino, o tipo de destinatário e o produto; se há substituição tributária e quem recolhe; se há diferencial de alíquota; qual o IPI; qual o regime de PIS e COFINS para aquele item. Errar não é uma questão de estilo — a nota é rejeitada pela SEFAZ na hora, ou é autorizada errada e vira passivo.</p>
+    <p>Sem sistema fiscal dedicado, isso acontece de três formas, todas ruins:</p>
+    <p><strong>Decisão no cadastro do item.</strong> Alguém amarra o CFOP no produto e reza para que a operação seja sempre a mesma. Funciona até a primeira venda interestadual para consumidor final, a primeira transferência, a primeira devolução.</p>
+    <p><strong>Decisão no operador.</strong> Uma tabela impressa ao lado do monitor. Nessa configuração, a taxa de rejeição fica alta e, pior, o erro que <em>passa</em> é o perigoso: nota autorizada com tributação errada só aparece na fiscalização, com multa e juros sobre anos.</p>
+    <p><strong>Decisão no consultor.</strong> A empresa terceiriza a parametrização e fica dependente de alguém externo a cada mudança de legislação — que no Brasil acontece continuamente, em três esferas ao mesmo tempo.</p>
+    <p>O sistema fiscal existe para transformar essa decisão em <strong>matriz de regras</strong> — uma estrutura que, dada a combinação de produto, origem, destino, operação e regime, devolve a tributação correta sem intervenção humana. E para manter essa matriz atualizada com a legislação, que é o serviço que realmente se compra.</p>
+    <aside class="cx cx-nota">
+    <p><strong>O argumento comercial real da categoria.</strong> Ninguém compra sistema fiscal por eficiência. Compra por três motivos: parar de ser rejeitado pela SEFAZ, parar de perder crédito tributário que teria direito, e transferir para um fornecedor o acompanhamento da legislação. O terceiro é o mais valioso e o menos discutido — é a diferença entre ter um time acompanhando convênio, protocolo e ajuste SINIEF, ou receber isso como atualização.</p>
+    </aside>
+    <h2 id="s2">Anatomia funcional</h2>
+    <h3>Motor de cálculo tributário</h3>
+    <p>O núcleo. Recebe o contexto da operação e devolve a tributação: CFOP, CST ou CSOSN, base de cálculo, alíquota, valor, e as reduções e benefícios aplicáveis, por tributo. Opera sobre uma matriz de regras parametrizada por produto ou NCM, origem, destino, tipo de operação, regime do emitente e perfil do destinatário.</p>
+    <h3>Emissor de documentos eletrônicos</h3>
+    <p>Monta o arquivo XML no leiaute vigente, assina com o certificado digital e o transmite. Cada documento tem seu próprio leiaute, sua própria autoridade e suas próprias regras de validação.</p>
+    <h3>Comunicação com as autoridades</h3>
+    <p>SEFAZ estadual para NF-e, NFC-e, CT-e e MDF-e; prefeitura para NFS-e, cada uma com padrão próprio; Receita Federal para as obrigações acessórias. Trata protocolo, autorização, rejeição, cancelamento, inutilização e carta de correção.</p>
+    <h3>Contingência</h3>
+    <p>O plano para quando a autoridade não responde. Modalidades distintas conforme o documento e o estado, com regras próprias de prazo e de regularização posterior. É o módulo que ninguém testa e do qual tudo depende no pior dia do mês.</p>
+    <h3>Recepção e manifestação de entrada</h3>
+    <p>Baixa do portal as notas emitidas contra o CNPJ da empresa, valida contra o pedido de compra e o recebimento físico, e registra a manifestação do destinatário dentro do prazo legal. É também a defesa contra nota fria emitida em nome da empresa.</p>
+    <h3>Escrituração e obrigações acessórias</h3>
+    <p>Monta e transmite SPED Fiscal, SPED Contribuições, ECD, ECF e EFD-Reinf, além das obrigações estaduais e municipais. Cada uma com seu calendário, seu leiaute e suas validações.</p>
+    <h3>Apuração</h3>
+    <p>Consolida débitos e créditos do período por tributo e por estado, aplica compensações, e gera a guia de recolhimento e os livros fiscais.</p>
+    <h3>Guarda de documentos</h3>
+    <p>Armazenamento do XML e do protocolo pelo prazo prescricional, com índice consultável e integridade verificável. Obrigação legal, não conveniência.</p>
+    <h2 id="s3">Modelo de dados essencial</h2>
+    <p>O que distingue um sistema fiscal de um emissor de nota é que a tributação <strong>não é um atributo do produto nem do cliente</strong>: é o resultado de uma função sobre o contexto completo da operação.</p>
+    <figure>
+    <div class="figwrap">
+    <svg viewBox="0 0 920 460" role="img" aria-label="Modelo de dados fiscal: o contexto da operação — produto, origem, destino, natureza e regime — entra na matriz de regras, que devolve a tributação por item; o documento fiscal agrega os itens, e cada mudança de estado é um evento imutável ligado a ele.">
+      <defs>
+        <marker id="f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+    
+      <g fill="none" stroke="currentColor" stroke-width="1.4">
+        <rect x="20" y="20"  width="150" height="46" rx="2"/>
+        <rect x="20" y="86"  width="150" height="46" rx="2"/>
+        <rect x="20" y="152" width="150" height="46" rx="2"/>
+        <rect x="20" y="218" width="150" height="46" rx="2"/>
+        <rect x="20" y="284" width="150" height="46" rx="2"/>
+      </g>
+      <rect x="300" y="118" width="230" height="118" rx="2" fill="none" stroke="currentColor" stroke-width="2.6"/>
+      <g fill="none" stroke="currentColor" stroke-width="1.4">
+        <rect x="640" y="40"  width="250" height="72" rx="2"/>
+        <rect x="640" y="150" width="250" height="72" rx="2"/>
+        <rect x="640" y="260" width="250" height="62" rx="2"/>
+        <rect x="300" y="350" width="230" height="72" rx="2"/>
+      </g>
+    
+      <g font-family="Archivo, sans-serif" font-size="13" font-weight="700" fill="currentColor">
+        <text x="32" y="40">Produto / NCM</text>
+        <text x="32" y="106">Origem</text>
+        <text x="32" y="172">Destino</text>
+        <text x="32" y="238">Natureza da operação</text>
+        <text x="32" y="304">Regime</text>
+        <text x="314" y="146">Matriz de regras</text>
+        <text x="654" y="64">Item do documento</text>
+        <text x="654" y="174">Documento fiscal</text>
+        <text x="654" y="284">Evento</text>
+        <text x="314" y="376">Apuração do período</text>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".6">
+        <text x="32" y="56">o que se move</text>
+        <text x="32" y="122">UF · CNPJ · estabelecimento</text>
+        <text x="32" y="188">UF · contribuinte? · uso final?</text>
+        <text x="32" y="254">venda · transferência · remessa</text>
+        <text x="32" y="320">real · presumido · simples</text>
+        <text x="314" y="166">produto × origem × destino ×</text>
+        <text x="314" y="180">operação × regime → tributação</text>
+        <text x="314" y="200">atualizada pelo fornecedor</text>
+        <text x="314" y="220">versionada por vigência</text>
+        <text x="654" y="82">CFOP · CST · base · alíquota</text>
+        <text x="654" y="96">valor por tributo</text>
+        <text x="654" y="192">chave · série · número · XML</text>
+        <text x="654" y="206">status: autorizada | rejeitada | cancelada</text>
+        <text x="654" y="302">autorização · cancelamento · CC-e · manifestação</text>
+        <text x="314" y="394">débito − crédito por tributo e UF</text>
+        <text x="314" y="408">→ guia e livro</text>
+      </g>
+    
+      <g stroke="currentColor" stroke-width="1.3" marker-end="url(#f)">
+        <line x1="172" y1="43"  x2="298" y2="150"/>
+        <line x1="172" y1="109" x2="298" y2="162"/>
+        <line x1="172" y1="175" x2="298" y2="175"/>
+        <line x1="172" y1="241" x2="298" y2="190"/>
+        <line x1="172" y1="307" x2="298" y2="204"/>
+        <line x1="532" y1="150" x2="638" y2="88"/>
+        <line x1="770" y1="114" x2="770" y2="148"/>
+        <line x1="770" y1="224" x2="770" y2="258"/>
+        <line x1="638" y1="200" x2="532" y2="368"/>
+      </g>
+    
+      <g font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".8">
+        <text x="560" y="108">calcula</text>
+        <text x="782" y="136">agrega</text>
+        <text x="782" y="246">registra</text>
+        <text x="548" y="300">alimenta</text>
+      </g>
+    </svg>
+    </div>
+    <figcaption>A tributação é calculada, não cadastrada. Os cinco elementos à esquerda formam o contexto; a matriz de regras é a função; o item do documento guarda o resultado. Cada mudança de estado do documento — autorização, cancelamento, carta de correção — é um evento imutável, nunca uma edição.</figcaption>
+    </figure>
+    
+    <p>Três decisões estruturais:</p>
+    <p><strong>A tributação é calculada e congelada no documento, não referenciada.</strong> O item guarda a alíquota e a base que valiam no momento da emissão. Se a matriz mudar amanhã, a nota de ontem continua reproduzindo os valores de ontem. Referenciar a regra em vez de gravar o resultado inviabiliza qualquer reapresentação histórica — e a fiscalização é sempre sobre o passado.</p>
+    <p><strong>A matriz é versionada por vigência.</strong> Regra tributária tem data de início e de fim. O sistema precisa responder "qual era a alíquota em 14 de março do ano passado", não apenas "qual é hoje". Sem vigência, retificar uma obrigação acessória de período anterior é impossível.</p>
+    <p><strong>O documento é uma máquina de estados dirigida por eventos.</strong> Em digitação, assinado, transmitido, autorizado, rejeitado, cancelado, denegado, inutilizado. Cada transição é um evento com protocolo, timestamp da autoridade e XML próprio. Modelar como campo de status editável perde o protocolo — que é justamente a prova.</p>
+    <h2 id="s4">Jornadas passo a passo</h2>
+    <h3>A. Emissão de uma NF-e de venda</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Faturamento</strong> conclui o pedido: itens, quantidades, preços, destinatário e condição de entrega.</li>
+    <li><strong>Sistema</strong> monta o contexto: estabelecimento emitente, UF de origem, UF e perfil do destinatário — contribuinte ou não, uso final ou revenda —, natureza da operação e regime tributário.</li>
+    <li><strong>Sistema</strong> consulta a matriz para cada item e devolve CFOP, CST, bases, alíquotas e valores por tributo, aplicando redução de base, benefício e substituição quando cabíveis.</li>
+    <li><strong>Sistema</strong> monta o XML no leiaute vigente, valida contra o schema e aplica as regras de negócio da SEFAZ antes de transmitir — validar localmente evita a maior parte das rejeições.</li>
+    <li><strong>Sistema</strong> assina com o certificado digital do emitente.</li>
+    <li><strong>Sistema</strong> transmite à SEFAZ da UF de origem e aguarda o retorno.</li>
+    <li><strong>SEFAZ</strong> autoriza e devolve o protocolo, que passa a integrar o documento.</li>
+    <li><strong>Sistema</strong> gera o DANFE, libera a impressão e informa a expedição de que a carga pode sair.</li>
+    <li><strong>Sistema</strong> grava o XML na guarda legal e envia ao financeiro o título a receber vinculado à nota.</li>
+    </ol>
+    </div>
+    <h3>B. Rejeição e correção</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>SEFAZ</strong> rejeita com um código e uma descrição — quase sempre por cadastro: inscrição estadual inválida, NCM inexistente, CST incompatível com o CFOP, destinatário não contribuinte com CFOP de contribuinte.</li>
+    <li><strong>Sistema</strong> classifica a rejeição: corrigível automaticamente, corrigível por cadastro, ou exige decisão humana.</li>
+    <li><strong>Sistema</strong> reapresenta sozinho o que for automático — número já utilizado, duplicidade, indisponibilidade momentânea.</li>
+    <li><strong>Fiscal</strong> corrige o cadastro quando a causa é ele, e a nota é retransmitida. A nota rejeitada não consome numeração.</li>
+    <li><strong>Sistema</strong> acumula a estatística de rejeição por causa, que é o indicador que mostra onde o cadastro está furado.</li>
+    </ol>
+    </div>
+    <h3>C. Contingência</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Sistema</strong> detecta indisponibilidade da SEFAZ, por timeout ou pelo serviço de status.</li>
+    <li><strong>Sistema</strong> entra em contingência na modalidade permitida para aquele documento e aquela UF, e a operação continua — a mercadoria sai.</li>
+    <li><strong>Sistema</strong> monitora o retorno do serviço.</li>
+    <li><strong>Sistema</strong> transmite o que ficou pendente assim que a autoridade volta, respeitando a ordem e os prazos de regularização.</li>
+    <li><strong>Fiscal</strong> confere o fechamento da contingência: toda nota emitida em contingência precisa terminar autorizada ou formalmente cancelada.</li>
+    </ol>
+    </div>
+    <h3>D. Entrada, manifestação e crédito</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Sistema</strong> consulta periodicamente o portal e baixa as notas emitidas contra o CNPJ da empresa.</li>
+    <li><strong>Sistema</strong> confronta cada nota com o pedido de compra e com o recebimento físico registrado no WMS.</li>
+    <li><strong>Sistema</strong> registra a manifestação do destinatário dentro do prazo: ciência, confirmação, desconhecimento ou operação não realizada.</li>
+    <li><strong>Fiscal</strong> trata as divergências — preço, quantidade, tributação incorreta pelo fornecedor — antes que virem crédito indevido.</li>
+    <li><strong>Sistema</strong> escritura a entrada e apura o crédito a que a empresa tem direito.</li>
+    </ol>
+    </div>
+    <h3>E. Fechamento do período</h3>
+    <div class="jornada">
+    <ol>
+    <li><strong>Sistema</strong> consolida todos os documentos de saída e entrada do período, por estabelecimento e por UF.</li>
+    <li><strong>Sistema</strong> apura débitos e créditos por tributo, aplica saldo anterior e compensações.</li>
+    <li><strong>Sistema</strong> gera os livros fiscais e as guias de recolhimento.</li>
+    <li><strong>Sistema</strong> monta os arquivos das obrigações acessórias, valida com o validador oficial e transmite.</li>
+    <li><strong>Fiscal</strong> confere as divergências entre o escriturado e o apurado antes do envio — depois de transmitido, corrigir exige retificação.</li>
+    </ol>
+    </div>
+    <h2 id="s5">Regras de negócio e casos de borda</h2>
+    <table>
+    <thead>
+    <tr>
+    <th>Situação</th>
+    <th>Tratamento esperado</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>Erro percebido depois da autorização</td>
+    <td>Depende do que está errado. Valor, item ou destinatário exigem cancelamento dentro do prazo legal, ou nota de devolução se o prazo passou. Dados acessórios admitem carta de correção. Confundir os dois casos é a origem clássica de passivo.</td>
+    </tr>
+    <tr>
+    <td>Prazo de cancelamento vencido com mercadoria não entregue</td>
+    <td>Não se cancela: emite-se nota de entrada para retorno, ou o destinatário emite devolução. O sistema precisa oferecer o caminho, senão alguém inventa um.</td>
+    </tr>
+    <tr>
+    <td>Numeração pulada</td>
+    <td>Exige inutilização formal da faixa perante a SEFAZ. Deixar buraco na sequência sem inutilizar é irregularidade.</td>
+    </tr>
+    <tr>
+    <td>Denegação por irregularidade cadastral do destinatário</td>
+    <td>A numeração é consumida e a nota não pode ser reaproveitada. O bloqueio de crédito comercial deveria acontecer antes, não na SEFAZ.</td>
+    </tr>
+    <tr>
+    <td>Venda interestadual para não contribuinte</td>
+    <td>Incide DIFAL, com recolhimento e obrigação acessória própria por UF de destino. Regra que muda com frequência e por estado.</td>
+    </tr>
+    <tr>
+    <td>Produto com substituição tributária</td>
+    <td>Quem recolhe depende do estado, do protocolo entre estados e da posição na cadeia. A mesma mercadoria muda de tratamento conforme o destino.</td>
+    </tr>
+    <tr>
+    <td>Remessa para industrialização e retorno</td>
+    <td>Operação com suspensão, prazo de retorno e CFOP próprio. O sistema precisa controlar o prazo — retorno fora do prazo perde a suspensão.</td>
+    </tr>
+    <tr>
+    <td>Transferência entre estabelecimentos da mesma empresa</td>
+    <td>Tratamento próprio, e tema que passou por mudança de entendimento nos tribunais. É um caso a confirmar com a assessoria tributária antes de parametrizar.</td>
+    </tr>
+    <tr>
+    <td>Fornecedor emite nota com tributação errada</td>
+    <td>O crédito aproveitado indevidamente é da empresa que recebeu. A manifestação de desconhecimento existe para isso e tem prazo.</td>
+    </tr>
+    <tr>
+    <td>Contingência não regularizada</td>
+    <td>Cada nota emitida em contingência precisa terminar autorizada ou cancelada. Pendência aberta aparece na malha fiscal meses depois.</td>
+    </tr>
+    <tr>
+    <td>Certificado digital vencendo</td>
+    <td>Bloqueia toda a emissão da empresa quando vence. Monitoramento com antecedência é requisito operacional, não lembrete.</td>
+    </tr>
+    <tr>
+    <td>Item sem NCM válido ou com NCM extinto</td>
+    <td>A tabela de NCM muda periodicamente. Item com NCM extinto rejeita na primeira emissão depois da mudança.</td>
+    </tr>
+    <tr>
+    <td>Nota emitida antes da conferência de saída</td>
+    <td>Se a conferência acusar diferença, a nota já está autorizada. A ordem correta é conferir, emitir, carregar.</td>
+    </tr>
+    </tbody>
+    </table>
+    <h2 id="s6">Arquitetura de referência</h2>
+    <p><strong>O certificado digital define o desenho.</strong> Um certificado A1 é arquivo e pode ser usado por serviço, permitindo emissão automatizada e alta disponibilidade. Um A3 vive em token ou cartão e exige presença física, o que inviabiliza emissão desatendida. A escolha condiciona toda a arquitetura de emissão.</p>
+    <p><strong>A comunicação com a autoridade é externa, lenta e instável.</strong> Isso obriga a tratar a emissão como processo assíncrono, com fila, repetição controlada e idempotência. Reenviar sem chave de idempotência gera nota duplicada — e nota duplicada é um problema com custo.</p>
+    <p><strong>Contingência é caminho principal, não exceção.</strong> Precisa ser exercitada em ambiente de homologação regularmente. A modalidade disponível varia por documento e por estado, e as regras de prazo e regularização mudam — este é um ponto para confirmar na documentação vigente antes de implementar.</p>
+    <p><strong>O pico é previsível e brutal.</strong> Fim de mês, véspera de feriado, corte de transportadora. O dimensionamento se faz pelo pico de emissão simultânea, e a fila precisa degradar com elegância: atrasar é aceitável, perder documento não é.</p>
+    <p><strong>A guarda tem requisito legal de prazo e integridade.</strong> XML e protocolo pelo prazo prescricional, com índice consultável e verificação de integridade. Armazenar apenas o DANFE em PDF não cumpre a obrigação — o documento é o XML.</p>
+    <p><strong>O ambiente de homologação é obrigatório no ciclo de desenvolvimento.</strong> As SEFAZ oferecem ambiente de teste, e emitir contra produção para validar mudança gera documento real com efeito real.</p>
+    <p><strong>A atualização legislativa é o custo recorrente.</strong> Leiaute de documento, tabela de NCM, alíquotas, regras de validação e benefícios mudam por ato normativo em três esferas. Numa construção interna, isso é um time permanente; num produto, é o que se está comprando.</p>
+    <aside class="cx cx-nota">
+    <p><strong>Construir versus comprar, nesta categoria.</strong> É a categoria em que a resposta é mais assimétrica de toda esta arquitetura. Emitir uma NF-e é tecnicamente acessível — há bibliotecas maduras e a integração é documentada. Manter o motor tributário correto ao longo do tempo é que não é: a matriz de regras precisa acompanhar convênios, protocolos, ajustes SINIEF e legislação estadual e municipal, continuamente. Construir o emissor e comprar o motor de regras é um meio-termo comum e defensável. Construir os dois exige um time fiscal dedicado que não é de software.</p>
+    </aside>
+    <h2 id="s7">Especificidade brasileira</h2>
+    <p>Esta categoria <strong>é</strong> a especificidade brasileira — não há equivalente direto na maioria dos países, onde a nota fiscal é documento privado e a apuração é declaratória e periódica. Aqui o Estado valida cada transação em tempo real, antes de a mercadoria circular.</p>
+    <h3>O mapa das obrigações</h3>
+    <table>
+    <thead>
+    <tr>
+    <th>Documento</th>
+    <th>Para quê</th>
+    <th>Autoridade</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>NF-e (modelo 55)</td>
+    <td>Circulação de mercadoria entre empresas</td>
+    <td>SEFAZ estadual</td>
+    </tr>
+    <tr>
+    <td>NFC-e (modelo 65)</td>
+    <td>Venda ao consumidor final</td>
+    <td>SEFAZ estadual</td>
+    </tr>
+    <tr>
+    <td>NFS-e</td>
+    <td>Prestação de serviço</td>
+    <td>Prefeitura — padrão por município, com esforço de padronização nacional em curso</td>
+    </tr>
+    <tr>
+    <td>CT-e</td>
+    <td>Transporte de carga</td>
+    <td>SEFAZ estadual</td>
+    </tr>
+    <tr>
+    <td>MDF-e</td>
+    <td>Manifesto que agrupa a carga do veículo</td>
+    <td>SEFAZ estadual</td>
+    </tr>
+    <tr>
+    <td>SPED Fiscal (EFD ICMS/IPI)</td>
+    <td>Escrituração de entradas, saídas, apuração e estoque</td>
+    <td>Receita Federal e SEFAZ</td>
+    </tr>
+    <tr>
+    <td>SPED Contribuições</td>
+    <td>Escrituração de PIS e COFINS</td>
+    <td>Receita Federal</td>
+    </tr>
+    <tr>
+    <td>ECD e ECF</td>
+    <td>Escrituração contábil e fiscal do lucro</td>
+    <td>Receita Federal</td>
+    </tr>
+    <tr>
+    <td>EFD-Reinf</td>
+    <td>Retenções e informações previdenciárias</td>
+    <td>Receita Federal</td>
+    </tr>
+    </tbody>
+    </table>
+    <p><strong>O Bloco K</strong>, dentro do SPED Fiscal, merece destaque por conectar esta camada à fábrica: exige informar a lista de materiais praticada, o consumo real e a produção efetiva por ordem, incluindo industrialização por terceiro. É o requisito que costuma justificar o investimento em MES — sem apontamento real, o consumo declarado é estimativa.</p>
+    <h3>A reforma tributária</h3>
+    <p>A Emenda Constitucional 132/2023 substitui PIS, COFINS, IPI, ICMS e ISS por CBS federal e IBS estadual e municipal, com Imposto Seletivo, e prevê transição por vários anos, com período de convivência entre os dois sistemas.</p>
+    <p>Para a arquitetura, o efeito é direto e vale registrar agora: <strong>durante a transição, o sistema precisa apurar os dois regimes em paralelo</strong> — os tributos atuais e os novos —, com leiautes de documento e obrigações acessórias que mudam ao longo do período. Isso significa que a matriz de regras versionada por vigência, descrita no modelo de dados, deixa de ser boa prática e vira requisito de sobrevivência.</p>
+    <aside class="cx cx-nota">
+    <p><strong>Verifique o calendário e as alíquotas antes de planejar.</strong> O cronograma de transição, as alíquotas de referência e as regras de creditamento estão sendo definidos e ajustados por legislação complementar e regulamentação. Qualquer número específico que eu apresentasse aqui envelheceria rápido e poderia estar errado. O que é estável e planejável é a consequência arquitetural: convivência de dois regimes por um período longo, com necessidade de reprocessar períodos anteriores nas regras vigentes à época.</p>
+    </aside>
+    <h3>Outras particularidades</h3>
+    <p><strong>Regime tributário muda tudo.</strong> Simples Nacional usa CSOSN em vez de CST e tem apuração unificada; lucro presumido e lucro real diferem em PIS e COFINS, cumulativo ou não cumulativo, com efeito direto no crédito.</p>
+    <p><strong>Benefício fiscal é regional e temporário.</strong> Programas estaduais de incentivo criam tratamentos específicos com vigência determinada, o que reforça a necessidade de versionamento por data.</p>
+    <p><strong>Municípios não são padronizados.</strong> Cada prefeitura definiu seu próprio padrão de NFS-e. Há esforço de unificação nacional em andamento, mas operação multimunicipal ainda exige múltiplas integrações — e é o ponto onde projetos costumam estourar prazo.</p>
+    <h2 id="s8">Como avaliar ou construir</h2>
+    <ul>
+    <li>A tributação é resultado de uma matriz sobre o contexto, ou está amarrada no cadastro do produto?</li>
+    <li>A matriz é versionada por vigência, permitindo reproduzir a tributação de um período passado?</li>
+    <li>O valor calculado fica congelado no item do documento?</li>
+    <li>Cada transição de estado do documento é um evento com protocolo, ou é um campo de status?</li>
+    <li>A validação local roda antes da transmissão, evitando rejeição por schema?</li>
+    <li>A contingência é testada com regularidade, e existe controle de fechamento?</li>
+    <li>A recepção de notas de entrada com manifestação está automatizada, dentro do prazo?</li>
+    <li>A guarda armazena XML e protocolo, com integridade verificável, pelo prazo legal?</li>
+    <li>Existe monitoramento de vencimento de certificado digital?</li>
+    <li>Quem mantém a matriz atualizada quando a legislação muda — e como isso chega ao sistema?</li>
+    <li>Há ambiente de homologação separado no ciclo de desenvolvimento?</li>
+    <li>O desenho comporta apuração paralela de dois regimes durante a transição da reforma?</li>
+    </ul>
+    <p class="note">As plataformas citadas são referências de mercado da categoria, não recomendações. O conteúdo descreve o funcionamento do tipo de sistema; nomes de módulo, licenciamento e limites técnicos de produto devem ser conferidos na documentação do fornecedor.</p>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail-secoes a'));
+    var map = {}, alvos = [];
+    links.forEach(function (a) {
+      var el = document.querySelector(a.getAttribute('href'));
+      if (el) { map[el.id] = a; alvos.push(el); }
+    });
+    if (!('IntersectionObserver' in window) || !alvos.length) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('on'); });
+          map[e.target.id].classList.add('on');
+        }
+      });
+    }, { rootMargin: '-12% 0px -70% 0px', threshold: 0 });
+    alvos.forEach(function (t) { io.observe(t); });
+  })();
+</script>
+</body>
+</html>
